@@ -15,11 +15,20 @@ def content(file: str):
 setup(
     name='template_python',
     version=content('VERSION'),
-    packages=find_packages(),
+    description='Simple Python template to get up and running',
+    author='James Day',
+    author_email='james.alex.day@outlook.com',
+    packages=find_packages(include=['template_python', 'template_python.*']),
     install_requires=[
         'wheel>=0.36.2',
         'versionner>=1.5.3',
+        'flask>=1.1.2'
     ],
+    extras_require={
+        'test': [
+            'pytest>=6.0.2'
+        ]
+    },
     python_requires='>=3.9',
     long_description=content('README.md'),
     long_description_content_type='text/markdown'

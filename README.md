@@ -43,3 +43,8 @@
     ```
 
 4) Run `pip install versionner; ver init; pip install .` (Needs to be ran this way to avoid cyclic issues)
+
+## Versioning
+
+`versionner` is used for versioning. 
+To do a major/minor/patch update: `ver up --major/--minor/--patch 1`
