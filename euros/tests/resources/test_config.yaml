@@ -1,0 +1,4 @@
+user_group: example_group
+port: 3000
+base_path: "./euros/tests/resources/example_base_path"
+cutoff_time: "2024-06-14 12:00:00+00:00"

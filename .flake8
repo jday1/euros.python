@@ -1,0 +1,4 @@
+[flake8]
+ignore = E203,W503,DAR002,DAR003,DAR005,DAR202,DAR203,DAR301,DAR101,DAR102,DAR201,DAR401
+max-line-length = 88
+exclude = */tests/**

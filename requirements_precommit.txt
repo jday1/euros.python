@@ -1,0 +1,10 @@
+anybadge==1.14.0
+black==24.8.0
+flake8==7.1.0
+flake8-html==0.4.3
+mypy==1.11.1
+pyupgrade==3.17.0
+pydocstyle==6.3.0
+types-requests==2.32.0.20240712
+types-pyyaml==6.0.12.20240724
+types-pytz==2024.1.0.20240417

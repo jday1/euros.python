@@ -1,0 +1,53 @@
+[project]
+name = "euros"
+dynamic = ["dependencies", "optional-dependencies"]
+version = "0.0.1"
+
+[tool.poetry]
+authors = [
+  "James Day <james.alex.day@outlook.com>",
+]
+description = "Dash App for a game built for Euros 2024."
+keywords = ["Euros", "2024"]
+license = "MIT"
+# packages = [
+#   {include = "euros"},
+# ]
+readme = "README.md"
+repository = "https://github.com/jday1/euros.python"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = {lint = {file = ["requirements_lint.txt"]}, test = {file = ["requirements_test.txt"]}}
+
+[tool.setuptools]
+py-modules = ["euros"]
+
+[tool.mypy]
+ignore_missing_imports = true
+plugins = "pydantic.mypy"
+python_version = "3.12"
+show_error_codes = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.coverage.run]
+omit = [
+  "*/tests/**",
+]
+parallel = true
+
+[tool.coverage.report]
+fail_under = 100.00
+precision = 2
+show_missing = true
+
+[tool.black]
+include = '\.pyi?$|\.py$|\.ipynb$'
+
+[tool.pydocstyle]
+add-ignore = "D100"
+convention = "google"
+
+[tool.isort]
+profile = "black"

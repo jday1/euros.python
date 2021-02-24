@@ -1,0 +1,63 @@
+# Install the pre-commit hooks below with
+# 'pre-commit install'
+
+# Run the hooks on all files with
+# 'pre-commit run --all'
+
+default_stages: [manual, commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-case-conflict
+        name: check case conflict (files)
+      - id: end-of-file-fixer
+        name: EOF fixer
+      - id: check-added-large-files
+        name: Check large files
+        args: ["--maxkb=5120"]
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        entry: black
+        args: [--config=pyproject.toml]
+        language: system
+        types: [ python ]
+        require_serial: true 
+      - id: flake8
+        name: flake8
+        entry: flake8
+        args: [--config=.flake8]
+        language: system
+        types: [ python ]
+        require_serial: true
+      - id: isort
+        name: isort
+        entry: isort
+        args: [--settings=pyproject.toml]
+        language: system
+        types: [ python ]
+        require_serial: true    
+      - id: pyupgrade
+        name: pyupgrade
+        entry: pyupgrade
+        args: [--py312-plus]
+        language: system
+        types: [ python ]
+        require_serial: true
+      - id: pydocstyle
+        name: pydocstyle
+        entry: pydocstyle
+        args: [--config=pyproject.toml]
+        language: system
+        types: [ python ]
+        require_serial: true
+      - id: mypy
+        name: mypy
+        exclude: ".*/tests/.*"
+        entry: mypy 
+        args: [--config-file=pyproject.toml]
+        language: system
+        types: [ python ]
+        require_serial: true
