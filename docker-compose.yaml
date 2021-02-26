@@ -1,0 +1,26 @@
+services:
+  lint:
+    build:
+      context: .
+      dockerfile: lint.Dockerfile
+    command: bash -c "
+      pylama --report lint.txt
+      "
+    volumes:
+      - .:/app
+    working_dir: /app
+  test:
+    build:
+      context: .
+      dockerfile: test.Dockerfile
+    command: bash -c "
+      coverage run -m pytest --html=report.html --self-contained-html;
+      EXIT_CODE=$$?;
+      coverage report;
+      coverage html -d coverage/;
+      exit $$EXIT_CODE
+      "
+    volumes:
+      - .:/app
+    working_dir: /app
+

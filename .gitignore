@@ -1,2 +1,11 @@
 # Remove intellij files
 /.idea
+
+# Python test files
+__pycache__/
+.coverage
+coverage/
+report.html
+
+# Python lint files
+lint.txt
