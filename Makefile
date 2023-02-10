@@ -13,6 +13,9 @@ check:
 test:
 	pytest .
 
+check_and_test:
+	make check && make test
+
 run:
 	gunicorn -w 1 -b 0.0.0.0:8080 template_python.main:main_app
 

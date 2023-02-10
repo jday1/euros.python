@@ -16,4 +16,5 @@ class Endpoint:
 
     @staticmethod
     def simple_method(input_num: int) -> int:
+        """Simple method to test."""
         return input_num + 1
