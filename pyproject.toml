@@ -1,0 +1,61 @@
+[project]
+name = "template-python"
+version = "0.0.1"
+
+
+[tool.poetry]
+description = "Simple Python template to get up and running."
+license = "MIT"
+authors = [
+    "James Day <james.alex.day@outlook.com>"
+]
+readme = "README.md"
+repository = "https://github.com/jday1/template.python"
+keywords = ["template"]
+packages = [
+    { include = "template_python" }
+]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt", "requirements_test.txt"]}
+optional-dependencies = {extras = {file = ["requirements_extras.txt"]}}
+
+[tool.setuptools]
+py-modules = ["template_python"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+show_error_codes = true
+plugins = "pydantic.mypy"
+ignore_missing_imports = true
+
+[tool.coverage.run]
+parallel = true
+omit = [
+    "*/tests/**",
+]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+cov_fail_under = 100.00
+
+[tool.pydocstyle]
+convention = "google"
+
+[tool.pylint]
+ignore = ["R0903"]
+recursive = "y"
+
+[tool.interrogate]
+fail-under = 100.0
+
+[tool.docformatter]
+in-place = true
+recursive = true
+
+[tool.pytest.ini_options]
+testpaths=["tests"]
+addopts = "--cov=template_python --cov-fail-under=100.00"

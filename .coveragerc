@@ -1,3 +1,0 @@
-[run]
-source = template_python
-omit = template_python/test/*
