@@ -3,9 +3,10 @@
 
 # Python test files
 __pycache__/
-.coverage
+.coverage*
 coverage/
 report.html
+.reports
 
 # Python lint files
 lint.txt

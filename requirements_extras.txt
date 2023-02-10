@@ -1,9 +1,12 @@
+anybadge==1.14.0
 black==23.1.0  # black .
 docformatter==1.5.1  # docformatter .
 flake8==6.0.0  # flake8 .
+flake8-html==0.4.3
 interrogate==1.5.0
 mypy==1.0.0  # mypy .
 pipdeptree==2.3.3 # pipdeptree
+pur==7.0.0
 pydantic==1.10.4  # Used in mypy
 pydocstyle==6.3.0  # pydocstyle .
 pylint==2.16.1  # pylint .

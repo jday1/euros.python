@@ -40,17 +40,21 @@ omit = [
 [tool.coverage.report]
 show_missing = true
 precision = 2
-cov_fail_under = 100.00
+fail_under = 100.00
 
 [tool.pydocstyle]
 convention = "google"
 
 [tool.pylint]
-ignore = ["R0903"]
 recursive = "y"
+min-public-methods = 0
 
 [tool.interrogate]
 fail-under = 100.0
+generate-badge = "./.badges/interrogate.svg"
+verbose = 2
+omit-covered-files = true
+ignore-regex = "test_*"
 
 [tool.docformatter]
 in-place = true
@@ -59,3 +63,4 @@ recursive = true
 [tool.pytest.ini_options]
 testpaths=["tests"]
 addopts = "--cov=template_python --cov-fail-under=100.00"
+junitxml = "junit.xml"
