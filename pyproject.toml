@@ -1,5 +1,5 @@
 [project]
-name = "template-python"
+name = "euros"
 version = "0.0.1"
 
 
@@ -13,7 +13,7 @@ readme = "README.md"
 repository = "https://github.com/jday1/template.python"
 keywords = ["template"]
 packages = [
-    { include = "template_python" }
+    { include = "euros" }
 ]
 
 [tool.setuptools.dynamic]
@@ -21,7 +21,7 @@ dependencies = {file = ["requirements.txt", "requirements_test.txt"]}
 optional-dependencies = {extras = {file = ["requirements_extras.txt"]}}
 
 [tool.setuptools]
-py-modules = ["template_python"]
+py-modules = ["euros"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -41,6 +41,10 @@ omit = [
 show_missing = true
 precision = 2
 fail_under = 100.00
+
+[tool.black]
+include = '\.pyi?$|\.py$|\.ipynb$'
+line-length = 140
 
 [tool.pydocstyle]
 convention = "google"
@@ -62,5 +66,5 @@ recursive = true
 
 [tool.pytest.ini_options]
 testpaths=["tests"]
-addopts = "--cov=template_python --cov-fail-under=100.00"
+addopts = "--cov=euros --cov-fail-under=100.00"
 junitxml = "junit.xml"
