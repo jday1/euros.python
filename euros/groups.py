@@ -1,10 +1,9 @@
 from cloudpathlib import S3Path
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
-from dash import dash_table, dcc, html
+from dash import dash_table, html
 
-from euros.config import CUSTOM_ORDERING, FIXTURES_PATH
+from euros.config import load_fixtures
 from euros.flags import FLAG_UNICODE
 
 
@@ -22,13 +21,11 @@ def get_points(home_score: str | int, away_score: str | int) -> pd.Series:
         return pd.Series([1, 1])
 
 
-def order_table(group_standing: pd.DataFrame, fixtures: pd.DataFrame, group: str) -> pd.DataFrame:
+def order_table(group_standing: pd.DataFrame, custom_order_path: S3Path | None) -> pd.DataFrame:
 
-    custom_order_path = CUSTOM_ORDERING / f"{group}.csv"
-
-    if custom_order_path.exists():
+    if custom_order_path is not None:
         custom_order = pd.read_csv(custom_order_path.fspath, header=None)[0].tolist()
-        group_standing['team'] = pd.Categorical(group_standing['team'], categories=custom_order, ordered=True)
+        group_standing["team"] = pd.Categorical(group_standing["team"], categories=custom_order, ordered=True)
         group_standing.sort_values("team", inplace=True)
         group_standing.reset_index(drop=True, inplace=True)
     else:
@@ -42,13 +39,12 @@ def order_table(group_standing: pd.DataFrame, fixtures: pd.DataFrame, group: str
     return group_standing
 
 
-def create_table(group: str) -> pd.DataFrame:
-    fixtures = pd.read_csv(FIXTURES_PATH.fspath)
+def create_table(group: str, fixtures: pd.DataFrame, custom_order_path: S3Path | None) -> pd.DataFrame:
 
     fixtures = fixtures[fixtures["Group"] == f"Group {group}"]
 
-    fixtures["Home Score"] = fixtures["Result"].apply(lambda x: int(x.split("-")[0]) if not isinstance(x, float) else "-")
-    fixtures["Away Score"] = fixtures["Result"].apply(lambda x: int(x.split("-")[1]) if not isinstance(x, float) else "-")
+    fixtures["Home Score"] = fixtures["Result"].apply(lambda x: int(x.split("-")[0]) if x != "" else "-")
+    fixtures["Away Score"] = fixtures["Result"].apply(lambda x: int(x.split("-")[1]) if x != "" else "-")
 
     fixtures[["Home Points", "Away Points"]] = fixtures.apply(
         lambda row: get_points(home_score=row["Home Score"], away_score=row["Away Score"]),
@@ -81,17 +77,17 @@ def create_table(group: str) -> pd.DataFrame:
 
     group_standing = group_standing.reset_index().rename(columns={"Home Team": "team"})
 
-    group_standing = order_table(group_standing, fixtures, group)
-    
+    group_standing = order_table(group_standing, custom_order_path)
+
     group_standing["team"] = group_standing["team"].apply(lambda team: team + " " + FLAG_UNICODE[team])
 
     return group_standing
 
 
-def make_table(group: str) -> dash_table.DataTable:
+def make_table(group: str, fixtures: pd.DataFrame, custom_order_path: S3Path | None) -> dash_table.DataTable:
     return dash_table.DataTable(
         id=f"group-table-{group}",
-        data=create_table(group).to_dict("records"),
+        data=create_table(group, fixtures, custom_order_path).to_dict("records"),
         sort_action="native",
         sort_mode="multi",
         columns=[
@@ -120,16 +116,22 @@ def make_table(group: str) -> dash_table.DataTable:
     )
 
 
-def create_groups_tab():
+def create_groups_tab(base_path: S3Path) -> html.Div:
+
+    fixtures = load_fixtures(base_path)
+
+    custom_order_path: S3Path = base_path / "custom_ordering"
+
+    paths: dict[str, S3Path] = {path.name.strip(".csv"): path for path in custom_order_path.glob("*.csv")}
+
     return html.Div(
-        # label="Group Stage",
         id="group-tab",
         children=[
             html.Br(),
-            dbc.Row([dbc.Col(make_table(i)) for i in "AB"]),
+            dbc.Row([dbc.Col(make_table(i, fixtures, paths.get(i))) for i in "AB"]),
             html.Br(),
-            dbc.Row([dbc.Col(make_table(i)) for i in "CD"]),
+            dbc.Row([dbc.Col(make_table(i, fixtures, paths.get(i))) for i in "CD"]),
             html.Br(),
-            dbc.Row([dbc.Col(make_table(i)) for i in "EF"]),
+            dbc.Row([dbc.Col(make_table(i, fixtures, paths.get(i))) for i in "EF"]),
         ],
     )

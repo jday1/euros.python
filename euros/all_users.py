@@ -1,24 +1,23 @@
-from pathlib import Path
-import time
-from cloudpathlib import S3Path
-from dash import Dash, DiskcacheManager, Input, Output, State, dash_table, dcc, html
 import pandas as pd
+from cloudpathlib import S3Path
+from dash import dash_table
 
-from euros.config import USER_CHOICES_STORE
+from euros.config import load_users
 from euros.flags import FLAG_UNICODE
-from euros.config import VALID_USERNAME_PASSWORD_PAIRS
 
 
-def create_user_choices() -> dash_table.DataTable:
+def create_user_choices(group: str, base_path: S3Path) -> pd.DataFrame:
     user_choices = []
 
-    for user in VALID_USERNAME_PASSWORD_PAIRS.keys():
-        path: S3Path = USER_CHOICES_STORE / f"{user}.csv"
+    user_choices_store = base_path / group / "choices"
+
+    for user in load_users(group, base_path).keys():
+        path: S3Path = user_choices_store / f"{user}.csv"
 
         if path.exists():
             df = pd.read_csv(path.fspath)
         else:
-            df = pd.DataFrame([{"team": k, "tokens": 0} for k, v in FLAG_UNICODE.items()])
+            df = pd.DataFrame([{"team": k, "tokens": 0} for k, _ in FLAG_UNICODE.items()])
 
         df["user"] = user.capitalize()
         user_choices.append(df)
@@ -32,8 +31,8 @@ def create_user_choices() -> dash_table.DataTable:
     return user_choices_df
 
 
-def create_all_users() -> dash_table.DataTable:
-    user_choices_df = create_user_choices()
+def create_all_users(group: str, base_path: S3Path) -> dash_table.DataTable:
+    user_choices_df = create_user_choices(group, base_path)
 
     user_choices_df["team"] = user_choices_df["team"].apply(lambda x: x + " " + FLAG_UNICODE[x])
 

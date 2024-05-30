@@ -1,15 +1,19 @@
+from datetime import datetime
 import dash_bootstrap_components as dbc
 import pandas as pd
 from cloudpathlib import S3Path
 from dash import dash_table, dcc, html
 
 from euros.all_users import create_all_users
-from euros.config import USER_CHOICES_STORE, show_users
+from euros.config import show_users
 from euros.flags import FLAG_UNICODE
 
 
-def load_user_choices(username: str) -> list[dict]:
-    path: S3Path = USER_CHOICES_STORE / f"{username}.csv"
+def load_user_choices(username: str, group: str, base_path: S3Path) -> list[dict]:
+
+    user_choices_store = base_path / group / "choices"
+
+    path: S3Path = user_choices_store / f"{username}.csv"
 
     if path.exists():
         df = pd.read_csv(path.fspath)
@@ -23,12 +27,12 @@ def load_user_choices(username: str) -> list[dict]:
     return records
 
 
-def create_play_tab(username) -> dcc.Tab:
+def create_play_tab(username: str, group: str, base_path: S3Path) -> dcc.Tab:
 
     choices_tab = [
         dash_table.DataTable(
             id="user-choices",
-            data=load_user_choices(username),
+            data=load_user_choices(username, group, base_path),
             sort_action="native",
             sort_mode="multi",
             style_cell_conditional=[
@@ -47,11 +51,11 @@ def create_play_tab(username) -> dcc.Tab:
                 {"name": "team", "id": "team", "editable": False},
                 {"name": "tokens", "id": "tokens", "type": "numeric"},
             ],
-            editable=not show_users(),
+            editable=not show_users(cutoff_time=datetime(2024, 6, 10, 18, 53)),
         ),
     ]
 
-    if not show_users():
+    if not show_users(cutoff_time=datetime(2024, 6, 10, 18, 53)):
         choices_tab += [
             html.Br(),
             dbc.Button("Update Selection", id="update-button", color="primary"),
@@ -67,7 +71,9 @@ def create_play_tab(username) -> dcc.Tab:
                 [
                     dbc.Col(
                         children=[
-                            html.H2(f"Welcome {username}",),
+                            html.H2(
+                                f"Welcome {username}",
+                            ),
                             html.H3("How to play"),
                             html.Ul(
                                 [
@@ -118,6 +124,10 @@ def create_play_tab(username) -> dcc.Tab:
                 ],
             ),
             html.Br(),
-            dbc.Row(create_all_users() if show_users() else html.H3("Once they are finalised, everyone's choices will appear here.")),
+            dbc.Row(
+                create_all_users("synteny", base_path)
+                if show_users(datetime(2024, 6, 10, 18, 53))
+                else html.H3("Once they are finalised, everyone's choices will appear here.")
+            ),
         ],
     )

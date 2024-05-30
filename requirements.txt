@@ -1,6 +1,9 @@
 dash[diskcache]
-dashauth
-
+dash_auth
 dash-bootstrap-components
 pandas
 cloudpathlib[s3]
+clearml
+pydantic
+werkzeug
+snakeviz

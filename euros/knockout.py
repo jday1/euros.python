@@ -1,17 +1,20 @@
+from datetime import datetime
+from cloudpathlib import S3Path
 import pandas as pd
 import plotly.graph_objects as go
 from dash import dcc
 from dash import dash_table, dcc, html
 
-from euros.config import FIXTURES_PATH
+from euros.config import load_fixtures
+from euros.fixtures import get_day_with_suffix
 from euros.flags import FLAG_UNICODE
 
 
-def create_knockout_fig():
+def create_knockout_fig(base_path: S3Path) -> go.Figure:
     # Create figure
     fig = go.Figure()
 
-    fixtures = pd.read_csv(FIXTURES_PATH.fspath)
+    fixtures = load_fixtures(base_path)
     ko_fixtures = fixtures[
         ~fixtures["Round Number"].isin(
             [
@@ -22,7 +25,7 @@ def create_knockout_fig():
         )
     ]
 
-    ko_fixtures["color"] = ko_fixtures["Round Number"].apply(
+    ko_fixtures.loc[:, "color"] = ko_fixtures["Round Number"].apply(
         lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
     )
 
@@ -30,9 +33,9 @@ def create_knockout_fig():
     x_distance = 1.6
 
     base_y_position = 0.2
-    y_distance = 0.6
+    y_distance = 0.8
 
-    ko_fixtures["position"] = [
+    ko_fixtures.loc[:, "position"] = [
         (base_x_position, base_y_position + y_distance * 4),  # 37
         (base_x_position + x_distance * 3, base_y_position),  # 38
         (base_x_position, base_y_position + y_distance * 6),  # 39
@@ -81,6 +84,25 @@ def create_knockout_fig():
             )
         )
 
+        date_string = f"""{row["Date"]}"""
+        date_obj = datetime.strptime(date_string, "%d/%m/%Y %H:%M")
+        # formatted_date = date_obj.strftime("%A %d %B %H:%M")
+        day_with_suffix = get_day_with_suffix(date_obj.day)
+        formatted_date_with_suffix = date_obj.strftime(f"%A {day_with_suffix} %B %H:%M")
+
+        fig.add_trace(
+            go.Scatter(
+                x=[x_position - 0.7],
+                y=[y_position - 0.3],
+                mode="text",
+                text=formatted_date_with_suffix,
+                textfont=dict(size=10, family="monospace"),
+                showlegend=False,
+                hoverinfo="none",
+                textposition="middle right",  # Align text to the left
+            )
+        )
+
         x_adj = 0.7
         y_adj = 0.2
 
@@ -112,9 +134,10 @@ def create_knockout_fig():
 
     fig.update_layout(
         xaxis=dict(showticklabels=False, range=[-0.5, 6.3], autorange=False),
-        yaxis=dict(showticklabels=False, range=[-0.2, 4.2], autorange=False),
+        # yaxis=dict(showticklabels=False, range=[-1.0, 6.2], autorange=False),
+        yaxis=dict(showticklabels=False, autorange=True),
         width=1300,
-        height=800,
+        height=1000,
         plot_bgcolor="white",
         legend=dict(
             title="",
@@ -123,12 +146,10 @@ def create_knockout_fig():
         ),
     )
 
-    # Show figure
     return fig
 
 
-def create_knockout_tab():
+def create_knockout_tab(base_path: S3Path) -> html.Div:
     return html.Div(
-        # label="Knockout Stage",
-        children=[dcc.Graph(figure=create_knockout_fig(), style={"width": "100%"}, id="knockout-stage-graph")],
+        children=[dcc.Graph(figure=create_knockout_fig(base_path), style={"width": "100%"}, id="knockout-stage-graph")],
     )
