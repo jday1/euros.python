@@ -1,15 +1,12 @@
-import os
 import tempfile
 from functools import reduce
 from pathlib import Path
-import time
 from typing import Any
 
 import dash_auth
 import dash_bootstrap_components as dbc
 import diskcache
 import pandas as pd
-from clearml import Task
 from cloudpathlib import S3Path
 from dash import Dash, DiskcacheManager, Input, Output, State, dcc, html
 from flask import request
@@ -24,8 +21,6 @@ from euros.play import create_play_tab
 from euros.standings import create_standings_tab
 
 
-PROF_DIR = "local/dash_profiler"
-
 
 class Config(BaseModel):
     # Host config
@@ -34,9 +29,6 @@ class Config(BaseModel):
     debug: bool
     app_name: str
     suppress_callback_exceptions: bool
-
-    # ClearML
-    clearml: bool
 
     # Run config
     user_group: str
@@ -197,6 +189,7 @@ def run(config: Config) -> None:
             return dbc.FormText("Something went wrong", color="red")
 
     if config.debug:
+        PROF_DIR = "local/dash_profiler"
         Path(PROF_DIR).mkdir(parents=True, exist_ok=True)
         app.server.wsgi_app = ProfilerMiddleware(
             app.server.wsgi_app, sort_by=("cumtime", "tottime"), restrictions=[50], stream=None, profile_dir=PROF_DIR
@@ -210,7 +203,7 @@ def parse_config() -> Config:
     cfg = {
         "host": "0.0.0.0",
         "port": 8050,
-        "debug": True,
+        "debug": False,
         "app_name": "Euros",
         "suppress_callback_exceptions": True,
         "user_group": "synteny",
