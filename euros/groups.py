@@ -41,31 +41,31 @@ def order_table(group_standing: pd.DataFrame, custom_order_path: S3Path | None) 
 
 def create_table(group: str, fixtures: pd.DataFrame, custom_order_path: S3Path | None) -> pd.DataFrame:
 
-    fixtures = fixtures[fixtures["Group"] == f"Group {group}"]
+    group_fixtures = fixtures[fixtures["Group"] == f"Group {group}"]
 
-    fixtures["Home Score"] = fixtures["Result"].apply(lambda x: int(x.split("-")[0]) if x != "" else "-")
-    fixtures["Away Score"] = fixtures["Result"].apply(lambda x: int(x.split("-")[1]) if x != "" else "-")
+    group_fixtures.loc[:, ["Home Score"]] = group_fixtures["Result"].apply(lambda x: int(x.split("-")[0]) if isinstance(x, str) and x != "" else "-")
+    group_fixtures.loc[:, ["Away Score"]] = group_fixtures["Result"].apply(lambda x: int(x.split("-")[1]) if isinstance(x, str) and x != "" else "-")
 
-    fixtures[["Home Points", "Away Points"]] = fixtures.apply(
+    group_fixtures.loc[:, ["Home Points", "Away Points"]] = group_fixtures.apply(
         lambda row: get_points(home_score=row["Home Score"], away_score=row["Away Score"]),
         axis=1,
     )
 
-    home_points = fixtures[["Home Team", "Home Points"]].groupby("Home Team").sum()["Home Points"]
-    away_points = fixtures[["Away Team", "Away Points"]].groupby("Away Team").sum()["Away Points"]
+    home_points = group_fixtures[["Home Team", "Home Points"]].groupby("Home Team").sum()["Home Points"]
+    away_points = group_fixtures[["Away Team", "Away Points"]].groupby("Away Team").sum()["Away Points"]
 
     team_points = home_points + away_points
 
-    fixtures["Home Score"] = fixtures["Home Score"].apply(lambda x: 0 if x == "-" else x)
-    fixtures["Away Score"] = fixtures["Away Score"].apply(lambda x: 0 if x == "-" else x)
+    group_fixtures.loc[:, "Home Score"] = group_fixtures["Home Score"].apply(lambda x: 0 if x == "-" else x)
+    group_fixtures.loc[:, "Away Score"] = group_fixtures["Away Score"].apply(lambda x: 0 if x == "-" else x)
 
-    home_total_goals_for = fixtures[["Home Team", "Home Score"]].groupby("Home Team").sum()["Home Score"]
-    away_total_goals_for = fixtures[["Away Team", "Away Score"]].groupby("Away Team").sum()["Away Score"]
+    home_total_goals_for = group_fixtures[["Home Team", "Home Score"]].groupby("Home Team").sum()["Home Score"]
+    away_total_goals_for = group_fixtures[["Away Team", "Away Score"]].groupby("Away Team").sum()["Away Score"]
 
     team_goals_for = home_total_goals_for + away_total_goals_for
 
-    home_total_goals_against = fixtures[["Home Team", "Away Score"]].groupby("Home Team").sum()["Away Score"]
-    away_total_goals_against = fixtures[["Away Team", "Home Score"]].groupby("Away Team").sum()["Home Score"]
+    home_total_goals_against = group_fixtures[["Home Team", "Away Score"]].groupby("Home Team").sum()["Away Score"]
+    away_total_goals_against = group_fixtures[["Away Team", "Home Score"]].groupby("Away Team").sum()["Home Score"]
 
     team_goals_against = home_total_goals_against + away_total_goals_against
 

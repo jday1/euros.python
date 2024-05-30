@@ -1,9 +1,8 @@
 from datetime import datetime
-from cloudpathlib import S3Path
-import pandas as pd
+
 import plotly.graph_objects as go
-from dash import dcc
-from dash import dash_table, dcc, html
+from cloudpathlib import S3Path
+from dash import dcc, html
 
 from euros.config import load_fixtures
 from euros.fixtures import get_day_with_suffix
@@ -25,7 +24,7 @@ def create_knockout_fig(base_path: S3Path) -> go.Figure:
         )
     ]
 
-    ko_fixtures.loc[:, "color"] = ko_fixtures["Round Number"].apply(
+    ko_fixtures.loc[:, ["color"]] = ko_fixtures["Round Number"].apply(
         lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
     )
 
@@ -35,7 +34,7 @@ def create_knockout_fig(base_path: S3Path) -> go.Figure:
     base_y_position = 0.2
     y_distance = 0.8
 
-    ko_fixtures.loc[:, "position"] = [
+    ko_fixtures.loc[:, ["x_position", "y_position"]] = [
         (base_x_position, base_y_position + y_distance * 4),  # 37
         (base_x_position + x_distance * 3, base_y_position),  # 38
         (base_x_position, base_y_position + y_distance * 6),  # 39
@@ -55,7 +54,7 @@ def create_knockout_fig(base_path: S3Path) -> go.Figure:
 
     for num, row in ko_fixtures.iterrows():
 
-        x_position, y_position = row["position"]
+        x_position, y_position = row["x_position"], row["y_position"]
         labels = [row["Away Team"], row["Home Team"]]
         color = row["color"]
 
