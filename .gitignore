@@ -30,3 +30,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+
+# User File
+users.json
