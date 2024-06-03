@@ -60,6 +60,7 @@ app = Dash(
     external_stylesheets=[dbc.themes.LUX],
     background_callback_manager=background_callback_manager,
     suppress_callback_exceptions=config.suppress_callback_exceptions,
+    title="Euros 2024"
 )
 
 server = app.server
