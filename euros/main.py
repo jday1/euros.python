@@ -1,4 +1,5 @@
 import tempfile
+from argparse import ArgumentParser
 from functools import reduce
 from pathlib import Path
 from typing import Any
@@ -34,16 +35,34 @@ class Config(BaseModel):
     base_path: S3Path
 
 
+def create_parser() -> ArgumentParser:
+    """Parse cli for args."""
+    parser = ArgumentParser(description="Euros 2024 Dash app.")
+    
+    parser.add_argument("--host", type=str, default="0.0.0.0", help="host.")
+    parser.add_argument("--port", type=int, help="port must be provided.")
+    parser.add_argument("--debug", action="store_true", help="debug.")
+    parser.add_argument("--app-name", type=str, default="Euros", help="app name.")
+    parser.add_argument("--suppress-callback-exceptions", action="store_true", help="suppress callback exceptions.", default=True)
+    parser.add_argument("--user-group", type=str, help="user group must be provided.")
+    parser.add_argument("--base-path", type=str, default="s3://user-jday/euros2024", help="base path.")
+    parser.add_argument("--profile", type=str, help="profile.")
+    
+    return parser
+
+
 def parse_config() -> Config:
 
+    args = create_parser().parse_args()
+
     cfg = {
-        "host": "0.0.0.0",
-        "port": 8050,
-        "debug": False,
-        "app_name": "Euros",
-        "suppress_callback_exceptions": True,
-        "user_group": "synteny",
-        "base_path": S3Path("s3://user-jday/euros2024"),
+        "host": args.host,
+        "port": args.port,
+        "debug": args.debug,
+        "app_name": args.app_name,
+        "suppress_callback_exceptions": args.suppress_callback_exceptions,
+        "user_group": args.user_group,
+        "base_path": S3Path(args.base_path, client=S3Client(profile_name=args.profile)),
     }
 
     return Config(**cfg)
