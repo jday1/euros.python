@@ -199,7 +199,7 @@ def update_user_choices(n_clicks: int, data: list[dict], username: str) -> dbc.F
 
         df.to_csv("choices.csv", index=False)
 
-        (base_path / user_group / "choices" / f"{username}.csv").upload_from("choices.csv")
+        (base_path / user_group / "choices" / f"{username}.csv").upload_from("choices.csv", force_overwrite_to_cloud=True)
 
         return dbc.FormText("Updated selection successfully.", color="blue")
     except Exception as e:
