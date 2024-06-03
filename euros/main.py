@@ -7,7 +7,7 @@ import dash_auth
 import dash_bootstrap_components as dbc
 import diskcache
 import pandas as pd
-from cloudpathlib import S3Path
+from cloudpathlib import S3Client, S3Path
 from dash import Dash, DiskcacheManager, Input, Output, State, dcc, html
 from flask import request
 from pydantic import BaseModel
@@ -199,7 +199,7 @@ def update_user_choices(n_clicks: int, data: list[dict], username: str) -> dbc.F
 
         df.to_csv("choices.csv", index=False)
 
-        (base_path / user_group / f"{username}.csv").upload_from("choices.csv")
+        (base_path / user_group / "choices" / f"{username}.csv").upload_from("choices.csv")
 
         return dbc.FormText("Updated selection successfully.", color="blue")
     except Exception as e:
