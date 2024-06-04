@@ -43,8 +43,12 @@ def create_table(group: str, fixtures: pd.DataFrame, custom_order_path: S3Path |
 
     group_fixtures = fixtures[fixtures["Group"] == f"Group {group}"]
 
-    group_fixtures.loc[:, ["Home Score"]] = group_fixtures["Result"].apply(lambda x: int(x.split("-")[0]) if isinstance(x, str) and x != "" else "-")
-    group_fixtures.loc[:, ["Away Score"]] = group_fixtures["Result"].apply(lambda x: int(x.split("-")[1]) if isinstance(x, str) and x != "" else "-")
+    group_fixtures.loc[:, ["Home Score"]] = group_fixtures["Result"].apply(
+        lambda x: int(x.split("-")[0]) if isinstance(x, str) and x != "" else "-"
+    )
+    group_fixtures.loc[:, ["Away Score"]] = group_fixtures["Result"].apply(
+        lambda x: int(x.split("-")[1]) if isinstance(x, str) and x != "" else "-"
+    )
 
     group_fixtures.loc[:, ["Home Points", "Away Points"]] = group_fixtures.apply(
         lambda row: get_points(home_score=row["Home Score"], away_score=row["Away Score"]),
