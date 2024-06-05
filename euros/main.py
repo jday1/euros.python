@@ -1,5 +1,6 @@
 import tempfile
 from argparse import ArgumentParser
+from datetime import datetime
 from functools import reduce
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,7 @@ class Config(BaseModel):
     user_group: str
     base_path: str = "s3://user-jday/euros2024"
     profile: str
+    cutoff_time: str = "2024-06-14 12:00:00"
 
 
 def create_parser() -> ArgumentParser:
@@ -66,9 +68,12 @@ def create_app(filepath: str) -> Dash:
         title="Euros 2024",
     )
 
-    # server = app.server
-
     base_path = S3Path(config.base_path, client=S3Client(profile_name=config.profile))
+
+    cutoff_time = datetime.strptime(config.cutoff_time, "%Y-%m-%d %H:%M:%S")
+
+    def show_users() -> bool:
+        return datetime.now() > cutoff_time
 
     dash_auth.BasicAuth(
         app,
@@ -144,13 +149,13 @@ def create_app(filepath: str) -> Dash:
     def render_content(tab: str, username: str, fixtures_filter_table: list[dict]) -> html.Div:
 
         if tab == "play-tab":
-            return create_play_tab(username, config.user_group, base_path=base_path)
+            return create_play_tab(username, config.user_group, base_path=base_path, show_users=show_users)
         elif tab == "groups-tab":
             return create_groups_tab(base_path=base_path)
         elif tab == "knockout-tab":
             return create_knockout_tab(base_path=base_path)
         elif tab == "fixtures-tab":
-            return create_fixtures_tab(fixtures_filter_table, fixtures_filter_select, base_path=base_path)
+            return create_fixtures_tab(fixtures_filter_table, fixtures_filter_select, base_path=base_path, show_users=show_users)
         elif tab == "standings-tab":
             return create_standings_tab(group=config.user_group, base_path=base_path)
 
@@ -175,36 +180,39 @@ def create_app(filepath: str) -> Dash:
         Input(component_id="update-button", component_property="n_clicks"),
         State(component_id="user-choices", component_property="data"),
         State(component_id="username", component_property="data"),
-        prevent_initial_call=True,
     )
     def update_user_choices(n_clicks: int, data: list[dict], username: str) -> dbc.FormText:
         if n_clicks is None:
-            return []
+            return html.Br()
 
         df = pd.DataFrame(data)
 
         tokens = df["tokens"]
 
+        font_size = "14px"
+
         if (tokens.astype(int) != tokens).all():
-            return dbc.FormText("Please enter integers only", color="red")
+            return dbc.FormText("Please enter integers only", color="red", style={"fontSize": font_size})
 
         if not ((tokens >= 0) & (tokens <= 11)).all():
-            return dbc.FormText("Please enter values between 0 and 11", color="red")
+            return dbc.FormText("Please enter values between 0 and 11", color="red", style={"fontSize": font_size})
 
         if tokens.sum() != 12:
-            return dbc.FormText("Token values must sum to 12", color="red")
+            return dbc.FormText("Token values must sum to 12", color="red", style={"fontSize": font_size})
 
         try:
             df["team"] = df["team"].apply(lambda x: " ".join(x.split(" ")[:-1]))
 
-            df.to_csv("choices.csv", index=False)
+            tmpdir = Path(tempfile.mkdtemp())
+            tmpfile = tmpdir / "choices.csv"
+            df.to_csv(tmpfile, index=False)
 
-            (base_path / config.user_group / "choices" / f"{username}.csv").upload_from("choices.csv", force_overwrite_to_cloud=True)
+            (base_path / config.user_group / "choices" / f"{username}.csv").upload_from(tmpfile, force_overwrite_to_cloud=True)
 
-            return dbc.FormText("Updated selection successfully.", color="blue")
+            return dbc.FormText("Updated selection successfully.", color="blue", style={"fontSize": font_size})
         except Exception as e:
             print(e)
-            return dbc.FormText("Something went wrong", color="red")
+            return dbc.FormText("Something went wrong", color="red", style={"fontSize": font_size})
 
     if config.debug:
         PROF_DIR = "local/dash_profiler"
@@ -213,7 +221,6 @@ def create_app(filepath: str) -> Dash:
             app.server.wsgi_app, sort_by=("cumtime", "tottime"), restrictions=[50], stream=None, profile_dir=PROF_DIR
         )
 
-    # app.run(host=config.host, debug=config.debug, port=config.port)
     return app, config
 
 

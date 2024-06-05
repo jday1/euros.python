@@ -1,13 +1,11 @@
-from datetime import datetime
+from typing import Callable
 
 import dash_bootstrap_components as dbc
 import pandas as pd
 from cloudpathlib import S3Path
 from dash import dcc, html
-from dash.development.base_component import Component
 
 from euros.all_users import create_user_choices
-from euros.config import show_users
 from euros.flags import FLAG_UNICODE
 
 
@@ -26,7 +24,7 @@ def get_day_with_suffix(day: int) -> str:
     return f"{day}{suffix}"
 
 
-def create_fixtures_tab(fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path) -> html.Div:
+def create_fixtures_tab(fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable) -> html.Div:
 
     fixtures_formatted = [
         html.Br(),
@@ -67,7 +65,7 @@ def create_fixtures_tab(fixtures_filter_table: list[dict], fixtures_filter_selec
             home_team = row.loc["Home Team"] + " " + FLAG_UNICODE.get(row.loc["Home Team"], "")
             away_team = row.loc["Away Team"] + " " + FLAG_UNICODE.get(row.loc["Away Team"], "")
 
-            if show_users(cutoff_time=datetime(2024, 6, 10, 18, 53)):
+            if show_users():
 
                 home_tokens = (
                     ", ".join(

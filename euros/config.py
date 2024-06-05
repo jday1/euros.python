@@ -5,10 +5,6 @@ import pandas as pd
 from cloudpathlib import S3Path
 
 
-def show_users(cutoff_time: datetime) -> bool:
-    return datetime.now() > cutoff_time
-
-
 def load_fixtures(base_path: S3Path) -> pd.DataFrame:
     # TODO - pandera?
     fixtures_path = base_path / "fixtures.csv"

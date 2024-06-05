@@ -1,11 +1,11 @@
-from datetime import datetime
+from typing import Callable
+
 import dash_bootstrap_components as dbc
 import pandas as pd
 from cloudpathlib import S3Path
 from dash import dash_table, dcc, html
 
 from euros.all_users import create_all_users
-from euros.config import show_users
 from euros.flags import FLAG_UNICODE
 
 
@@ -27,7 +27,9 @@ def load_user_choices(username: str, group: str, base_path: S3Path) -> list[dict
     return records
 
 
-def create_play_tab(username: str, group: str, base_path: S3Path) -> dcc.Tab:
+def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Callable) -> dcc.Tab:
+
+    do_show_users = show_users()
 
     choices_tab = [
         dash_table.DataTable(
@@ -51,11 +53,11 @@ def create_play_tab(username: str, group: str, base_path: S3Path) -> dcc.Tab:
                 {"name": "team", "id": "team", "editable": False},
                 {"name": "tokens", "id": "tokens", "type": "numeric"},
             ],
-            editable=not show_users(cutoff_time=datetime(2024, 6, 10, 18, 53)),
+            editable=not do_show_users,
         ),
     ]
 
-    if not show_users(cutoff_time=datetime(2024, 6, 10, 18, 53)):
+    if not do_show_users:
         choices_tab += [
             html.Br(),
             dbc.Button("Update Selection", id="update-button", color="primary"),
@@ -63,7 +65,6 @@ def create_play_tab(username: str, group: str, base_path: S3Path) -> dcc.Tab:
         ]
 
     return html.Div(
-        # label="Play",
         id="play-tab",
         children=[
             html.Br(),
@@ -126,7 +127,7 @@ def create_play_tab(username: str, group: str, base_path: S3Path) -> dcc.Tab:
             html.Br(),
             dbc.Row(
                 create_all_users("synteny", base_path)
-                if show_users(datetime(2024, 6, 10, 18, 53))
+                if do_show_users
                 else html.H3("Once they are finalised, everyone's choices will appear here.")
             ),
         ],
