@@ -27,7 +27,7 @@ def load_user_choices(username: str, group: str, base_path: S3Path) -> list[dict
     return records
 
 
-def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Callable) -> dcc.Tab:
+def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Callable, cutoff: str) -> dcc.Tab:
 
     do_show_users = show_users()
 
@@ -80,7 +80,7 @@ def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Ca
                                 [
                                     html.Br(),
                                     html.Li(
-                                        "Before the start of the first game (Friday 14th June), "
+                                        f"Before the start of the first game ({cutoff}), "
                                         "you distribute 12 tokens across the 24 countries in the "
                                         "competition. The only restriction is that you cannot "
                                         "put all 12 tokens on a single country "

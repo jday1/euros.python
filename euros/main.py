@@ -9,6 +9,7 @@ import dash_auth
 import dash_bootstrap_components as dbc
 import diskcache
 import pandas as pd
+import pytz
 import yaml
 from cloudpathlib import S3Client, S3Path
 from dash import Dash, DiskcacheManager, Input, Output, State, dcc, html
@@ -70,10 +71,10 @@ def create_app(filepath: str) -> Dash:
 
     base_path = S3Path(config.base_path, client=S3Client(profile_name=config.profile))
 
-    cutoff_time = datetime.strptime(config.cutoff_time, "%Y-%m-%d %H:%M:%S")
+    cutoff_time = datetime.strptime(config.cutoff_time, "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone("Europe/London"))
 
     def show_users() -> bool:
-        return datetime.now() > cutoff_time
+        return datetime.now(pytz.timezone("Europe/London")) > cutoff_time
 
     dash_auth.BasicAuth(
         app,
@@ -149,7 +150,7 @@ def create_app(filepath: str) -> Dash:
     def render_content(tab: str, username: str, fixtures_filter_table: list[dict]) -> html.Div:
 
         if tab == "play-tab":
-            return create_play_tab(username, config.user_group, base_path=base_path, show_users=show_users)
+            return create_play_tab(username, config.user_group, base_path=base_path, show_users=show_users, cutoff=config.cutoff_time)
         elif tab == "groups-tab":
             return create_groups_tab(base_path=base_path)
         elif tab == "knockout-tab":
