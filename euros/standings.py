@@ -129,6 +129,7 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
     standings_table: pd.DataFrame = standings.groupby(["user"])["points_allocated"].sum().sort_values(ascending=False)
 
     df = standings_table.reset_index().reset_index().rename(columns={"index": "position"})
+    df["position"] = df["position"] + 1
 
     df["points_allocated"] = df["points_allocated"].round(3)
 
