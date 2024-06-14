@@ -1,6 +1,6 @@
-from cloudpathlib import S3Path
 import dash_bootstrap_components as dbc
 import pandas as pd
+from cloudpathlib import S3Path
 from dash import dash_table, html
 
 from euros.config import load_fixtures
@@ -9,16 +9,16 @@ from euros.flags import FLAG_UNICODE
 
 def get_points(home_score: str | int, away_score: str | int) -> pd.Series:
     if home_score == "-":
-        return pd.Series([0, 0])
+        return pd.Series([0, 0], index=["Home Points", "Away Points"])
 
     assert isinstance(home_score, int) and isinstance(away_score, int)
 
     if home_score > away_score:
-        return pd.Series([3, 0])
+        return pd.Series([3, 0], index=["Home Points", "Away Points"])
     elif home_score < away_score:
-        return pd.Series([0, 3])
+        return pd.Series([0, 3], index=["Home Points", "Away Points"])
     else:
-        return pd.Series([1, 1])
+        return pd.Series([1, 1], index=["Home Points", "Away Points"])
 
 
 def order_table(group_standing: pd.DataFrame, custom_order_path: S3Path | None) -> pd.DataFrame:
@@ -49,7 +49,6 @@ def create_table(group: str, fixtures: pd.DataFrame, custom_order_path: S3Path |
     group_fixtures.loc[:, ["Away Score"]] = group_fixtures["Result"].apply(
         lambda x: int(x.split("-")[1]) if isinstance(x, str) and x != "" else "-"
     )
-
     group_fixtures.loc[:, ["Home Points", "Away Points"]] = group_fixtures.apply(
         lambda row: get_points(home_score=row["Home Score"], away_score=row["Away Score"]),
         axis=1,

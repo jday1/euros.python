@@ -156,7 +156,9 @@ def create_app(filepath: str) -> Dash:
         elif tab == "knockout-tab":
             return create_knockout_tab(base_path=base_path)
         elif tab == "fixtures-tab":
-            return create_fixtures_tab(fixtures_filter_table, fixtures_filter_select, base_path=base_path, show_users=show_users)
+            return create_fixtures_tab(
+                fixtures_filter_table, fixtures_filter_select, base_path=base_path, show_users=show_users, group=config.user_group
+            )
         elif tab == "standings-tab":
             return create_standings_tab(group=config.user_group, base_path=base_path)
 

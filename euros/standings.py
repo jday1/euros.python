@@ -130,7 +130,7 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
 
     df = standings_table.reset_index().reset_index().rename(columns={"index": "position"})
 
-    df["points_allocated"] = df["points_allocated"].round(2)
+    df["points_allocated"] = df["points_allocated"].round(3)
 
     return dash_table.DataTable(
         id="current-standings",

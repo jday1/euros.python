@@ -126,7 +126,7 @@ def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Ca
             ),
             html.Br(),
             dbc.Row(
-                create_all_users("synteny", base_path)
+                create_all_users(group, base_path)
                 if do_show_users
                 else html.H3("Once they are finalised, everyone's choices will appear here.")
             ),

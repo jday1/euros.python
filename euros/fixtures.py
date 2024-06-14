@@ -9,11 +9,9 @@ from euros.all_users import create_user_choices
 from euros.flags import FLAG_UNICODE
 
 
-def lookup_team_owners(team: str, base_path: S3Path) -> dict:
-    user_choices: pd.DataFrame = create_user_choices("synteny", base_path)
-    user_choices.set_index("team", inplace=True)
-
-    return dict(user_choices.loc[team].items())
+def lookup_team_owners(team: str, user_choices: pd.DataFrame) -> dict:
+    df = user_choices.set_index("team")
+    return dict(df.loc[team].items())
 
 
 def get_day_with_suffix(day: int) -> str:
@@ -24,7 +22,9 @@ def get_day_with_suffix(day: int) -> str:
     return f"{day}{suffix}"
 
 
-def create_fixtures_tab(fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable) -> html.Div:
+def create_fixtures_tab(
+    fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable, group: str
+) -> html.Div:
 
     fixtures_formatted = [
         html.Br(),
@@ -44,6 +44,8 @@ def create_fixtures_tab(fixtures_filter_table: list[dict], fixtures_filter_selec
 
     # Sort the DataFrame by the datetime column
     fixtures = fixtures.sort_values(by="datestamp")
+
+    user_choices = create_user_choices(group, base_path)
 
     for date, rows in fixtures.groupby("datestamp").__iter__():
         day_with_suffix = get_day_with_suffix(date.day)
@@ -69,14 +71,22 @@ def create_fixtures_tab(fixtures_filter_table: list[dict], fixtures_filter_selec
 
                 home_tokens = (
                     ", ".join(
-                        [f"""{k} ({v})""" for k, v in lookup_team_owners(row.loc["Home Team"], base_path).items() if v > 0 and k != "total"]
+                        [
+                            f"""{k} ({v})"""
+                            for k, v in lookup_team_owners(row.loc["Home Team"], user_choices).items()
+                            if v > 0 and k != "total"
+                        ]
                     )
                     if row.loc["Home Team"] in FLAG_UNICODE.keys()
                     else ""
                 )
                 away_tokens = (
                     ", ".join(
-                        [f"""{k} ({v})""" for k, v in lookup_team_owners(row.loc["Away Team"], base_path).items() if v > 0 and k != "total"]
+                        [
+                            f"""{k} ({v})"""
+                            for k, v in lookup_team_owners(row.loc["Away Team"], user_choices).items()
+                            if v > 0 and k != "total"
+                        ]
                     )
                     if row.loc["Away Team"] in FLAG_UNICODE.keys()
                     else ""
