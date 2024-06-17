@@ -95,28 +95,31 @@ def create_app(filepath: str) -> Dash:
         placeholder="Filter fixtures by Team",
     )
 
+    def create_layout() -> dbc.Container:
+        return dbc.Container(
+            [
+                dcc.Store(id="username"),
+                dcc.Store(id="username-dummy-trigger"),
+                dcc.Store(id="fixtures-filter-table", data=load_fixtures(base_path).to_dict("records")),
+                html.H2("Euros"),
+                dcc.Tabs(
+                    [
+                        dcc.Tab(label="Play", id="play-tab", value="play-tab"),
+                        dcc.Tab(label="Groups", id="groups-tab", value="groups-tab"),
+                        dcc.Tab(label="Knockout", id="knockout-tab", value="knockout-tab"),
+                        dcc.Tab(label="Fixtures", id="fixtures-tab", value="fixtures-tab"),
+                        dcc.Tab(label="Standings", id="standings-tab", value="standings-tab"),
+                    ],
+                    id="tabs",
+                    value="play-tab",
+                ),
+                html.Div(id="tabs-content"),
+            ],
+            style={"width": "2000px", "margin-top": "50px", "margin-bottom": "50px"},
+        )
+
     # Define the layout
-    app.layout = dbc.Container(
-        [
-            dcc.Store(id="username"),
-            dcc.Store(id="username-dummy-trigger"),
-            dcc.Store(id="fixtures-filter-table", data=load_fixtures(base_path).to_dict("records")),
-            html.H2("Euros"),
-            dcc.Tabs(
-                [
-                    dcc.Tab(label="Play", id="play-tab", value="play-tab"),
-                    dcc.Tab(label="Groups", id="groups-tab", value="groups-tab"),
-                    dcc.Tab(label="Knockout", id="knockout-tab", value="knockout-tab"),
-                    dcc.Tab(label="Fixtures", id="fixtures-tab", value="fixtures-tab"),
-                    dcc.Tab(label="Standings", id="standings-tab", value="standings-tab"),
-                ],
-                id="tabs",
-                value="play-tab",
-            ),
-            html.Div(id="tabs-content"),
-        ],
-        style={"width": "2000px", "margin-top": "50px", "margin-bottom": "50px"},
-    )
+    app.layout = create_layout
 
     @app.callback(
         Output("fixtures-filter-table", "data"),
