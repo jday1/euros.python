@@ -5,6 +5,7 @@ from functools import reduce
 from pathlib import Path
 from typing import Any
 
+import dash
 import dash_auth
 import dash_bootstrap_components as dbc
 import diskcache
@@ -128,8 +129,15 @@ def create_app(filepath: str) -> Dash:
         Output("fixtures-filter-table", "data"),
         Input("fixtures-filter-value", "value"),
         Input("fixtures-filter-button", "n_clicks"),
+        State("fixtures-filter-table", "data"),
     )
-    def update_fixture_filter_table(value: list[dict] | None, fixtures_filter_button_n_clicks: int) -> list[dict]:
+    def update_fixture_filter_table(value: list[dict] | None, fixtures_filter_button_n_clicks: int, previous_data: list[dict]) -> list[dict]:
+
+        # If the button exists, but is not clicked, return the current table - don't do anything!
+        if (
+            fixtures_filter_button_n_clicks is not None and fixtures_filter_button_n_clicks > 0 and dash.callback_context.triggered[0]["prop_id"] == "fixtures-filter-value.value"
+        ):
+            return previous_data
 
         fixtures: pd.DataFrame = load_fixtures(base_path)
 
