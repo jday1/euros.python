@@ -116,7 +116,7 @@ def create_app(filepath: str) -> Dash:
                 ),
                 dbc.Row(id="tabs-content", justify="center"),
             ],
-            style={"maxWidth": "2000px", "margin-top": "50px", "margin-bottom": "50px"},
+            style={"maxWidth": "1500px", "margin-top": "50px", "margin-bottom": "50px"},
             fluid=True,
         )
 
