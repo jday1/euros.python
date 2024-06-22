@@ -74,14 +74,14 @@ def create_fixtures(
                 if "Winner Match" in home_team:
                     home_team = home_team.replace("Winner Match", "MW")
                 elif FLAG_UNICODE.get(home_team) is not None:
-                    home_team = home_team[:3] + "\n" + FLAG_UNICODE.get(home_team, "")
+                    home_team = [home_team[:3], FLAG_UNICODE.get(home_team, "")]
                 else:
                     home_team = home_team
 
                 if "Winner Match" in away_team:
                     away_team = away_team.replace("Winner Match", "MW")
                 elif FLAG_UNICODE.get(away_team) is not None:
-                    away_team = away_team[:3] + " " + FLAG_UNICODE.get(away_team, "")
+                    away_team = [away_team[:3], FLAG_UNICODE.get(away_team, "")]
                 else:
                     away_team = away_team
             else:
@@ -135,7 +135,8 @@ def create_fixtures(
                                             width=4,
                                         ),
                                         dbc.Col(header_large(away_team), style={"text-align": "left"}, width=4),
-                                    ]
+                                    ],
+                                    align="center",
                                 ),
                                 width=8,
                             ),
