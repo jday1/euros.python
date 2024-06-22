@@ -9,6 +9,21 @@ from dash import dash_table, dcc, html
 from euros.all_users import create_user_choices
 from euros.config import load_fixtures
 
+STANDINGS_COLOR_PALETTE = [
+    "#1f77b4",  # Blue
+    "#ff7f0e",  # Orange
+    "#2ca02c",  # Green
+    "#d62728",  # Red
+    "#9467bd",  # Purple
+    "#8c564b",  # Brown
+    "#e377c2",  # Pink
+    "#7f7f7f",  # Gray
+    "#bcbd22",  # Yellow-green
+    "#17becf",  # Cyan
+    "#2f4f4f",  # Slate
+    "#ffbb78"   # Light orange
+]
+
 
 def get_wdl(result: str) -> str:
     if "(" in result:
@@ -125,15 +140,16 @@ def create_figure(standings: pd.DataFrame) -> go.Figure:
 
     # Create traces for each user
     data = []
-    for user, group in df.groupby("user"):
+    for num, (user, group) in enumerate(df.groupby("user")):
 
         trace = go.Scatter(
             x=group["Date"],
             y=group["cumulative_points"],
             mode="lines+markers",
             name=user,
+            line=dict(color=STANDINGS_COLOR_PALETTE[num % len(STANDINGS_COLOR_PALETTE)]),
             customdata=group,
-            hovertemplate="%{customdata[4]} %{customdata[6]} %{customdata[5]}"
+            hovertemplate="<b>%{customdata[4]} %{customdata[6]} %{customdata[5]}</b>"
             + "<br><b>Points Gained: %{customdata[9]}</b>"
             + "<br><b>Cumulative Total: %{customdata[10]}</b>"
             + "<extra></extra>",
@@ -167,7 +183,7 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
         columns=[
             {"name": "Pos.", "id": "position"},
             {"name": "Name", "id": "user"},
-            {"name": "Points", "id": "points_allocated"},
+            {"name": "Total Dividend", "id": "points_allocated"},
         ],
         style_cell_conditional=[
             {"if": {"column_id": "position"}, "minWidth": "20px", "maxWidth": "20px"},

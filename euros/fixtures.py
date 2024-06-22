@@ -22,12 +22,12 @@ def get_day_with_suffix(day: int) -> str:
     return f"{day}{suffix}"
 
 
-def create_fixtures_large(
+def create_fixtures(
     fixtures_filter_table: list[dict],
     fixtures_filter_select: dcc.Dropdown,
-    base_path: S3Path,
+    fixtures: pd.DataFrame,
+    user_choices: pd.DataFrame,
     show_users: Callable,
-    group: str,
     fixtures_id: str,
     header_small: Callable = html.H4,
     header_large: Callable = html.H3,
@@ -42,19 +42,6 @@ def create_fixtures_large(
 
     if not fixtures_filter_table:
         return fixtures_formatted
-
-    fixtures = pd.DataFrame(fixtures_filter_table)
-
-    fixtures["datestamp"] = fixtures["Date"].apply(lambda x: x.split(" ")[0])
-    fixtures["timestamp"] = fixtures["Date"].apply(lambda x: x.split(" ")[1])
-
-    # Convert the date column to datetime format
-    fixtures["datestamp"] = pd.to_datetime(fixtures["datestamp"], dayfirst=True)
-
-    # Sort the DataFrame by the datetime column
-    fixtures = fixtures.sort_values(by="datestamp")
-
-    user_choices = create_user_choices(group, base_path)
 
     for date, rows in fixtures.groupby("datestamp").__iter__():
         day_with_suffix = get_day_with_suffix(date.day)
@@ -194,25 +181,38 @@ def create_fixtures_tab(
     fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable, group: str
 ) -> html.Div:
 
+    fixtures = pd.DataFrame(fixtures_filter_table)
+
+    fixtures["datestamp"] = fixtures["Date"].apply(lambda x: x.split(" ")[0])
+    fixtures["timestamp"] = fixtures["Date"].apply(lambda x: x.split(" ")[1])
+
+    # Convert the date column to datetime format
+    fixtures["datestamp"] = pd.to_datetime(fixtures["datestamp"], dayfirst=True)
+
+    # Sort the DataFrame by the datetime column
+    fixtures = fixtures.sort_values(by="datestamp")
+
+    user_choices = create_user_choices(group, base_path)
+
     return [
-        create_fixtures_large(
+        create_fixtures(
             fixtures_filter_table,
             fixtures_filter_select,
-            base_path,
+            fixtures,
+            user_choices,
             show_users,
-            group,
             fixtures_id="small-fixtures",
             font_size=8,
             header_small=html.H6,
             header_large=html.H6,
             shorten_countries=True,
         ),
-        create_fixtures_large(
+        create_fixtures(
             fixtures_filter_table,
             fixtures_filter_select,
-            base_path,
+            fixtures,
+            user_choices,
             show_users,
-            group,
             fixtures_id="large-fixtures",
         ),
     ]

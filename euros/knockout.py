@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import dash_bootstrap_components as dbc
+import pandas as pd
 import plotly.graph_objects as go
 from cloudpathlib import S3Path
 from dash import dcc, html
@@ -10,23 +11,8 @@ from euros.fixtures import get_day_with_suffix
 from euros.flags import FLAG_UNICODE
 
 
-def create_knockout_fig_small(base_path: S3Path) -> go.Figure:
+def create_knockout_fig_small(ko_fixtures: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
-
-    fixtures = load_fixtures(base_path)
-    ko_fixtures = fixtures[
-        ~fixtures["Round Number"].isin(
-            [
-                "1",
-                "2",
-                "3",
-            ]
-        )
-    ]
-
-    ko_fixtures.loc[:, ["color"]] = ko_fixtures["Round Number"].apply(
-        lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
-    )
 
     base_x_position = 0.5
     x_distance = 1.6
@@ -158,24 +144,9 @@ def create_knockout_fig_small(base_path: S3Path) -> go.Figure:
     return fig
 
 
-def create_knockout_fig_medium(base_path: S3Path) -> go.Figure:
+def create_knockout_fig_medium(ko_fixtures: pd.DataFrame) -> go.Figure:
     # Create figure
     fig = go.Figure()
-
-    fixtures = load_fixtures(base_path)
-    ko_fixtures = fixtures[
-        ~fixtures["Round Number"].isin(
-            [
-                "1",
-                "2",
-                "3",
-            ]
-        )
-    ]
-
-    ko_fixtures.loc[:, ["color"]] = ko_fixtures["Round Number"].apply(
-        lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
-    )
 
     base_x_position = 0.5
     x_distance = 1.6
@@ -305,24 +276,9 @@ def create_knockout_fig_medium(base_path: S3Path) -> go.Figure:
     return fig
 
 
-def create_knockout_fig_large(base_path: S3Path) -> go.Figure:
+def create_knockout_fig_large(ko_fixtures: pd.DataFrame) -> go.Figure:
     # Create figure
     fig = go.Figure()
-
-    fixtures = load_fixtures(base_path)
-    ko_fixtures = fixtures[
-        ~fixtures["Round Number"].isin(
-            [
-                "1",
-                "2",
-                "3",
-            ]
-        )
-    ]
-
-    ko_fixtures.loc[:, ["color"]] = ko_fixtures["Round Number"].apply(
-        lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
-    )
 
     base_x_position = 0.5
     x_distance = 1.6
@@ -446,11 +402,27 @@ def create_knockout_fig_large(base_path: S3Path) -> go.Figure:
 
 
 def create_knockout_tab(base_path: S3Path) -> html.Div:
+    
+    fixtures = load_fixtures(base_path)
+    ko_fixtures = fixtures[
+        ~fixtures["Round Number"].isin(
+            [
+                "1",
+                "2",
+                "3",
+            ]
+        )
+    ]
+
+    ko_fixtures.loc[:, ["color"]] = ko_fixtures["Round Number"].apply(
+        lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
+    )
+    
     return [
         dbc.Col(
             html.Div(
                 dcc.Graph(
-                    figure=create_knockout_fig_small(base_path),
+                    figure=create_knockout_fig_small(ko_fixtures),
                     # style={"width": "100%"},
                     style={"width": "100%", "minWidth": "400px"},
                     config={"staticPlot": True},
@@ -462,7 +434,7 @@ def create_knockout_tab(base_path: S3Path) -> html.Div:
         ),
         dbc.Col(
             dcc.Graph(
-                figure=create_knockout_fig_medium(base_path),
+                figure=create_knockout_fig_medium(ko_fixtures),
                 style={"width": "100%"},
             ),
             width=12,
@@ -470,7 +442,7 @@ def create_knockout_tab(base_path: S3Path) -> html.Div:
         ),
         dbc.Col(
             dcc.Graph(
-                figure=create_knockout_fig_large(base_path),
+                figure=create_knockout_fig_large(ko_fixtures),
                 style={"width": "100%"},
             ),
             width=12,
