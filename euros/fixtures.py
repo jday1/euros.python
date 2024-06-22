@@ -25,6 +25,7 @@ def get_day_with_suffix(day: int) -> str:
 def create_fixtures(
     fixtures_filter_table: list[dict],
     fixtures_filter_select: dcc.Dropdown,
+    filter_fixtures_button: dbc.Button,
     fixtures: pd.DataFrame,
     user_choices: pd.DataFrame,
     show_users: Callable,
@@ -39,6 +40,13 @@ def create_fixtures(
         html.Br(),
         fixtures_filter_select,
     ]
+
+    if shorten_countries:
+        fixtures_formatted += [
+            html.Br(),
+            filter_fixtures_button,
+            html.Br(),
+        ]
 
     if not fixtures_filter_table:
         return fixtures_formatted
@@ -66,7 +74,7 @@ def create_fixtures(
                 if "Winner Match" in home_team:
                     home_team = home_team.replace("Winner Match", "MW")
                 elif FLAG_UNICODE.get(home_team) is not None:
-                    home_team = home_team[:3] + " " + FLAG_UNICODE.get(home_team, "")
+                    home_team = home_team[:3] + "\n" + FLAG_UNICODE.get(home_team, "")
                 else:
                     home_team = home_team
 
@@ -178,7 +186,7 @@ def create_fixtures(
 
 
 def create_fixtures_tab(
-    fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable, group: str
+    fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, filter_fixtures_button: dbc.Button, base_path: S3Path, show_users: Callable, group: str
 ) -> html.Div:
 
     fixtures = pd.DataFrame(fixtures_filter_table)
@@ -198,6 +206,7 @@ def create_fixtures_tab(
         create_fixtures(
             fixtures_filter_table,
             fixtures_filter_select,
+            filter_fixtures_button,
             fixtures,
             user_choices,
             show_users,
@@ -210,6 +219,7 @@ def create_fixtures_tab(
         create_fixtures(
             fixtures_filter_table,
             fixtures_filter_select,
+            filter_fixtures_button,
             fixtures,
             user_choices,
             show_users,

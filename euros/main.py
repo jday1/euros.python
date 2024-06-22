@@ -95,6 +95,7 @@ def create_app(filepath: str) -> Dash:
         multi=True,
         placeholder="Filter fixtures by Team",
     )
+    fixtures_filter_button = dbc.Button("Filter", id="fixtures-filter-button", color="primary")
 
     def create_layout() -> dbc.Container:
         return dbc.Container(
@@ -126,8 +127,9 @@ def create_app(filepath: str) -> Dash:
     @app.callback(
         Output("fixtures-filter-table", "data"),
         Input("fixtures-filter-value", "value"),
+        Input("fixtures-filter-button", "n_clicks"),
     )
-    def update_fixture_filter_table(value: list[dict] | None) -> list[dict]:
+    def update_fixture_filter_table(value: list[dict] | None, fixtures_filter_button_n_clicks: int) -> list[dict]:
 
         fixtures: pd.DataFrame = load_fixtures(base_path)
 
@@ -162,7 +164,12 @@ def create_app(filepath: str) -> Dash:
             return create_knockout_tab(base_path=base_path)
         elif tab == "fixtures-tab":
             return create_fixtures_tab(
-                fixtures_filter_table, fixtures_filter_select, base_path=base_path, show_users=show_users, group=config.user_group
+                fixtures_filter_table,
+                fixtures_filter_select,
+                fixtures_filter_button,
+                base_path=base_path,
+                show_users=show_users,
+                group=config.user_group,
             )
         elif tab == "standings-tab":
             return create_standings_tab(group=config.user_group, base_path=base_path)
