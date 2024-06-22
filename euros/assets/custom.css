@@ -1,0 +1,25 @@
+/* Hide the divs by default */
+.small-knockout, .medium-knockout, .large-knockout, .small-fixtures, .large-fixtures, .small-standings, .large-standings {
+    display: none;
+}
+
+/* Show the div only when the screen width is less than 600px */
+@media (max-width: 750px) {
+    .small-knockout, .small-fixtures, .small-standings {
+        display: block;
+    }
+}
+
+/* Show the div only when the screen width is between 601px and 1200px */
+@media (min-width: 751px) and (max-width: 1200px) {
+    .medium-knockout, .large-fixtures, .large-standings {
+        display: block;
+    }
+}
+
+/* Show the div only when the screen width is greater than 1200px */
+@media (min-width: 1201px) {
+    .large-knockout, .large-fixtures, .large-standings {
+        display: block;
+    }
+}

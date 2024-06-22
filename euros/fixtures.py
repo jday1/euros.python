@@ -22,9 +22,18 @@ def get_day_with_suffix(day: int) -> str:
     return f"{day}{suffix}"
 
 
-def create_fixtures_tab(
-    fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable, group: str
-) -> html.Div:
+def create_fixtures_large(
+    fixtures_filter_table: list[dict],
+    fixtures_filter_select: dcc.Dropdown,
+    base_path: S3Path,
+    show_users: Callable,
+    group: str,
+    fixtures_id: str,
+    header_small: Callable = html.H4,
+    header_large: Callable = html.H3,
+    font_size: int = 14,
+    shorten_countries: bool = False,
+):
 
     fixtures_formatted = [
         html.Br(),
@@ -54,7 +63,7 @@ def create_fixtures_tab(
         fixtures_formatted += [
             html.Br(),
             dbc.Row(
-                [html.H4(formatted_date)],
+                [header_small(formatted_date)],
                 style={"text-align": "center"},
             ),
         ]
@@ -64,8 +73,27 @@ def create_fixtures_tab(
         for num, row in rows.iterrows():
             matchday = row.loc["Group"] if row.loc["Group"] != "" else row.loc["Round Number"]
 
-            home_team = row.loc["Home Team"] + " " + FLAG_UNICODE.get(row.loc["Home Team"], "")
-            away_team = row.loc["Away Team"] + " " + FLAG_UNICODE.get(row.loc["Away Team"], "")
+            home_team, away_team = row.loc["Home Team"], row.loc["Away Team"]
+
+            if shorten_countries:
+                if "Winner Match" in home_team:
+                    home_team = home_team.replace("Winner Match", "MW")
+                elif FLAG_UNICODE.get(home_team) is not None:
+                    home_team = home_team[:3] + " " + FLAG_UNICODE.get(home_team, "")
+                else:
+                    home_team = home_team
+
+                if "Winner Match" in away_team:
+                    away_team = away_team.replace("Winner Match", "MW")
+                elif FLAG_UNICODE.get(away_team) is not None:
+                    away_team = away_team[:3] + " " + FLAG_UNICODE.get(away_team, "")
+                else:
+                    away_team = away_team
+            else:
+                if FLAG_UNICODE.get(home_team) is not None:
+                    home_team = home_team + " " + FLAG_UNICODE.get(home_team, "")
+                if FLAG_UNICODE.get(away_team) is not None:
+                    away_team = away_team + " " + FLAG_UNICODE.get(away_team, "")
 
             if show_users():
 
@@ -96,27 +124,27 @@ def create_fixtures_tab(
                     html.Br(),
                     dbc.Row(
                         [
-                            dbc.Col(home_tokens, style={"text-align": "left"}, width=2),  # TODO
+                            dbc.Col(home_tokens, style={"text-align": "left", "fontSize": font_size}, width=2),  # TODO
                             dbc.Col(
                                 dbc.Row(
                                     [
                                         dbc.Col(
                                             f"""Match {row["Match Number"]}, {matchday}, {row["Location"]}""",
-                                            style={"text-align": "center"},
+                                            style={"text-align": "center", "fontSize": font_size},
                                             width=12,
                                         ),
-                                        dbc.Col(html.H3(home_team), style={"text-align": "right"}, width=5),
+                                        dbc.Col(header_large(home_team), style={"text-align": "right"}, width=4),
                                         dbc.Col(
-                                            [html.H4(row.loc["timestamp"] if row["Result"] == "" else row["Result"])],
+                                            [header_small(row.loc["timestamp"] if row["Result"] == "" else row["Result"])],
                                             style={"text-align": "center"},
-                                            width=2,
+                                            width=4,
                                         ),
-                                        dbc.Col(html.H3(away_team), style={"text-align": "left"}, width=5),
+                                        dbc.Col(header_large(away_team), style={"text-align": "left"}, width=4),
                                     ]
                                 ),
                                 width=8,
                             ),
-                            dbc.Col(away_tokens, style={"text-align": "right"}, width=2),
+                            dbc.Col(away_tokens, style={"text-align": "right", "fontSize": font_size}, width=2),
                         ],
                         align="center",
                         style={"minHeight": "150px"},
@@ -135,16 +163,16 @@ def create_fixtures_tab(
                                     [
                                         dbc.Col(
                                             f"""Match {row["Match Number"]}, {matchday}, {row["Location"]}""",
-                                            style={"text-align": "center"},
+                                            style={"text-align": "center", "fontSize": font_size},
                                             width=12,
                                         ),
-                                        dbc.Col(html.H3(home_team), style={"text-align": "right"}, width=5),
+                                        dbc.Col(header_large(home_team), style={"text-align": "right"}, width=5),
                                         dbc.Col(
-                                            [html.H4(row.loc["timestamp"] if row["Result"] == "" else row["Result"])],
+                                            [header_small(row.loc["timestamp"] if row["Result"] == "" else row["Result"])],
                                             style={"text-align": "center"},
                                             width=2,
                                         ),
-                                        dbc.Col(html.H3(away_team), style={"text-align": "left"}, width=5),
+                                        dbc.Col(header_large(away_team), style={"text-align": "left"}, width=5),
                                     ]
                                 ),
                                 width=8,
@@ -156,6 +184,35 @@ def create_fixtures_tab(
                     ),
                 ]
 
-    return html.Div(
+    return dbc.Col(
         children=fixtures_formatted,
+        className=fixtures_id,
     )
+
+
+def create_fixtures_tab(
+    fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, base_path: S3Path, show_users: Callable, group: str
+) -> html.Div:
+
+    return [
+        create_fixtures_large(
+            fixtures_filter_table,
+            fixtures_filter_select,
+            base_path,
+            show_users,
+            group,
+            fixtures_id="small-fixtures",
+            font_size=8,
+            header_small=html.H6,
+            header_large=html.H6,
+            shorten_countries=True,
+        ),
+        create_fixtures_large(
+            fixtures_filter_table,
+            fixtures_filter_select,
+            base_path,
+            show_users,
+            group,
+            fixtures_id="large-fixtures",
+        ),
+    ]

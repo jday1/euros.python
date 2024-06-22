@@ -39,15 +39,5 @@ def create_all_users(group: str, base_path: S3Path) -> dash_table.DataTable:
     return dash_table.DataTable(
         id="all-users",
         data=user_choices_df.to_dict("records"),
-        style_cell_conditional=[
-            {
-                "if": {"column_id": "team"},
-                "minWidth": "100px",
-                "maxWidth": "100px",
-            },
-        ],
-        style_cell={
-            "minWidth": "50px",
-            "maxWidth": "50px",
-        },
+        style_table={"overflowX": "auto", "width": "100%"},
     )

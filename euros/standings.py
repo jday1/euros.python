@@ -1,7 +1,9 @@
-from cloudpathlib import S3Path
+import copy
+
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
+from cloudpathlib import S3Path
 from dash import dash_table, dcc, html
 
 from euros.all_users import create_user_choices
@@ -69,8 +71,12 @@ def get_standings(group: str, base_path: S3Path) -> pd.DataFrame | None:
     fixtures["Home WDL"] = fixtures["Result"].apply(get_wdl)
     fixtures["Away WDL"] = fixtures["Home WDL"].apply(lambda x: "W" if x == "L" else "L" if x == "W" else "D")
 
-    fixtures_home = fixtures[["Round Number", "Date", "Home Team", "Home WDL"]].rename(columns={"Home Team": "team", "Home WDL": "WDL"})
-    fixtures_away = fixtures[["Round Number", "Date", "Away Team", "Away WDL"]].rename(columns={"Away Team": "team", "Away WDL": "WDL"})
+    fixtures_home = fixtures[["Match Number", "Round Number", "Date", "Home Team", "Home WDL"]].rename(
+        columns={"Home Team": "team", "Home WDL": "WDL"}
+    )
+    fixtures_away = fixtures[["Match Number", "Round Number", "Date", "Away Team", "Away WDL"]].rename(
+        columns={"Away Team": "team", "Away WDL": "WDL"}
+    )
 
     results: pd.DataFrame = pd.concat([fixtures_home, fixtures_away])
 
@@ -95,27 +101,49 @@ def get_standings(group: str, base_path: S3Path) -> pd.DataFrame | None:
 
     merged_results["points_allocated"] = merged_results["Points To Allocate"] * merged_results["ownership"]
 
+    merged_results = pd.merge(
+        merged_results, fixtures[["Match Number", "Home Team", "Away Team", "Result"]], on="Match Number", how="inner"
+    )
+
     return merged_results
 
 
 def create_figure(standings: pd.DataFrame) -> go.Figure:
 
-    res = standings.groupby(["Round Number", "Date", "user"])["points_allocated"].sum().reset_index()
+    res = (
+        standings.groupby(["Round Number", "Date", "user", "Match Number", "Home Team", "Away Team", "Result"])["points_allocated"]
+        .sum()
+        .reset_index()
+    )
 
     res["Date"] = pd.to_datetime(res["Date"], dayfirst=True)
     df = res.sort_values(by=["user", "Round Number", "Date"])
     df["cumulative_points"] = df.groupby("user")["points_allocated"].cumsum()
 
+    df["points_allocated_shown"] = df["points_allocated"].round(3)
+    df["cumulative_points_shown"] = df["cumulative_points"].round(3)
+
     # Create traces for each user
     data = []
     for user, group in df.groupby("user"):
-        trace = go.Scatter(x=group["Date"], y=group["cumulative_points"], mode="lines+markers", name=user)
+
+        trace = go.Scatter(
+            x=group["Date"],
+            y=group["cumulative_points"],
+            mode="lines+markers",
+            name=user,
+            customdata=group,
+            hovertemplate="%{customdata[4]} %{customdata[6]} %{customdata[5]}"
+            + "<br><b>Points Gained: %{customdata[9]}</b>"
+            + "<br><b>Cumulative Total: %{customdata[10]}</b>"
+            + "<extra></extra>",
+        )
         data.append(trace)
 
     layout = go.Layout(
         xaxis=dict(title="Date", range=["2024-06-14", "2024-07-14"], tickformat="%Y-%m-%d", tickangle=-45),
         yaxis=dict(title="Total Dividend"),
-        width=800,
+        # width=800,
         height=800,
     )
 
@@ -153,39 +181,61 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
     )
 
 
+def create_standings(
+    standings_table: dash_table.DataTable,
+    standings_figure: go.Figure,
+    table_width: int,
+    graph_width: int,
+    static_plot: bool,
+) -> list:
+
+    return [
+        html.Br(),
+        dbc.Row(
+            [
+                dbc.Col(
+                    standings_table,
+                    width=table_width,
+                ),
+                dbc.Col(
+                    html.Div(
+                        dcc.Graph(
+                            figure=standings_figure,
+                            style={"minWidth": "400px", "width": "100%"},
+                            config={"staticPlot": static_plot},
+                        ),
+                        style={"overflowX": "auto"},
+                    ),
+                    width=graph_width,
+                ),
+            ],
+            align="center",
+        ),
+    ]
+
+
 def create_standings_tab(group: str, base_path: S3Path) -> html.Div:
 
     standings: pd.DataFrame | None = get_standings(group, base_path)
 
     if standings is None:
-        return html.Div(
+        return dbc.Col(
             children=[
                 html.Br(),
                 html.H4("Standings will appear here after the first fixture completes."),
             ]
         )
     else:
-        return html.Div(
-            children=[
-                html.Br(),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                html.Br(),
-                                html.Br(),
-                                html.Br(),
-                                html.Br(),
-                                html.Br(),
-                                create_current_standings(standings),
-                            ],
-                            width=4,
-                        ),
-                        dbc.Col(
-                            [dcc.Graph(figure=create_figure(standings), style={"width": "100%"})],
-                            width=8,
-                        ),
-                    ]
-                ),
-            ],
-        )
+
+        standings_table = create_current_standings(standings)
+        standings_figure = create_figure(standings)
+
+        standings_figure_small = copy.deepcopy(standings_figure)
+        standings_figure_small.update_xaxes(autorange=True)
+
+        return [
+            dbc.Col(children=create_standings(standings_table, standings_figure, 4, 8, static_plot=False), className="large-standings"),
+            dbc.Col(
+                children=create_standings(standings_table, standings_figure_small, 12, 12, static_plot=True), className="small-standings"
+            ),
+        ]

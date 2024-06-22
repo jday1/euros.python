@@ -40,13 +40,13 @@ def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Ca
             style_cell_conditional=[
                 {
                     "if": {"column_id": "team"},
-                    "minWidth": "120px",
-                    "maxWidth": "120px",
+                    # "minWidth": "120px",
+                    # "maxWidth": "120px",
                 },
                 {
                     "if": {"column_id": "tokens"},
-                    "minWidth": "50px",
-                    "maxWidth": "50px",
+                    # "minWidth": "50px",
+                    # "maxWidth": "50px",
                 },
             ],
             columns=[
@@ -64,7 +64,7 @@ def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Ca
             html.Div(id="warning-text"),
         ]
 
-    return html.Div(
+    return dbc.Col(
         id="play-tab",
         children=[
             html.Br(),
@@ -116,11 +116,11 @@ def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Ca
                                 ]
                             ),
                         ],
-                        width=7,
+                        # width=7,
                     ),
                     dbc.Col(
                         children=choices_tab,
-                        width=5,
+                        # width=5,
                     ),
                 ],
             ),

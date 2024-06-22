@@ -116,6 +116,7 @@ def make_table(group: str, fixtures: pd.DataFrame, custom_order_path: S3Path | N
                 "maxWidth": "50px",
             },
         ],
+        style_table={"overflowX": "auto", "width": "100%"},
     )
 
 
@@ -127,14 +128,11 @@ def create_groups_tab(base_path: S3Path) -> html.Div:
 
     paths: dict[str, S3Path] = {path.name.strip(".csv"): path for path in custom_order_path.glob("*.csv")}
 
-    return html.Div(
-        id="group-tab",
+    return dbc.Col(
         children=[
             html.Br(),
-            dbc.Row([dbc.Col(make_table(i, fixtures, paths.get(i))) for i in "AB"]),
-            html.Br(),
-            dbc.Row([dbc.Col(make_table(i, fixtures, paths.get(i))) for i in "CD"]),
-            html.Br(),
-            dbc.Row([dbc.Col(make_table(i, fixtures, paths.get(i))) for i in "EF"]),
+            dbc.Row([dbc.Col(children=[make_table(i, fixtures, paths.get(i)), html.Br()]) for i in "AB"]),
+            dbc.Row([dbc.Col(children=[make_table(i, fixtures, paths.get(i)), html.Br()]) for i in "CD"]),
+            dbc.Row([dbc.Col(children=[make_table(i, fixtures, paths.get(i)), html.Br()]) for i in "EF"]),
         ],
     )

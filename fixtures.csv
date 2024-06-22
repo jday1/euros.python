@@ -6,19 +6,19 @@ Match Number,Round Number,Date,Location,Home Team,Away Team,Group,Result
 5,1,16/06/2024 14:00,Volksparkstadion,Poland,Netherlands,Group D,1-2
 6,1,16/06/2024 17:00,Arena Stuttgart,Slovenia,Denmark,Group C,1-1
 7,1,16/06/2024 20:00,Arena AufSchalke,Serbia,England,Group C,0-1
-8,1,17/06/2024 14:00,Fußball Arena München,Romania,Ukraine,Group E,
-9,1,17/06/2024 17:00,Frankfurt Stadion,Belgium,Slovakia,Group E,
-10,1,17/06/2024 20:00,Düsseldorf Arena,Austria,France,Group D,
-11,1,18/06/2024 17:00,BVB Stadion Dortmund,Türkiye,Georgia,Group F,
-12,1,18/06/2024 20:00,RB Arena,Portugal,Czechia,Group F,
-13,2,19/06/2024 14:00,Volksparkstadion,Croatia,Albania,Group B,
-14,2,19/06/2024 17:00,Arena Stuttgart,Germany,Hungary,Group A,
-15,2,19/06/2024 20:00,Stadion Köln,Scotland,Switzerland,Group A,
-16,2,20/06/2024 14:00,Fußball Arena München,Slovenia,Serbia,Group C,
-17,2,20/06/2024 17:00,Frankfurt Stadion,Denmark,England,Group C,
-18,2,20/06/2024 20:00,Arena AufSchalke,Spain,Italy,Group B,
-19,2,21/06/2024 14:00,Düsseldorf Arena,Slovakia,Ukraine,Group E,
-20,2,21/06/2024 17:00,Olympiastadion,Poland,Austria,Group D,
+8,1,17/06/2024 14:00,Fußball Arena München,Romania,Ukraine,Group E,3-0
+9,1,17/06/2024 17:00,Frankfurt Stadion,Belgium,Slovakia,Group E,0-1
+10,1,17/06/2024 20:00,Düsseldorf Arena,Austria,France,Group D,0-1
+11,1,18/06/2024 17:00,BVB Stadion Dortmund,Türkiye,Georgia,Group F,3-1
+12,1,18/06/2024 20:00,RB Arena,Portugal,Czechia,Group F,2-1
+13,2,19/06/2024 14:00,Volksparkstadion,Croatia,Albania,Group B,2-2
+14,2,19/06/2024 17:00,Arena Stuttgart,Germany,Hungary,Group A,2-0
+15,2,19/06/2024 20:00,Stadion Köln,Scotland,Switzerland,Group A,1-1
+16,2,20/06/2024 14:00,Fußball Arena München,Slovenia,Serbia,Group C,1-1
+17,2,20/06/2024 17:00,Frankfurt Stadion,Denmark,England,Group C,1-1
+18,2,20/06/2024 20:00,Arena AufSchalke,Spain,Italy,Group B,1-0
+19,2,21/06/2024 14:00,Düsseldorf Arena,Slovakia,Ukraine,Group E,1-2
+20,2,21/06/2024 17:00,Olympiastadion,Poland,Austria,Group D,1-3
 21,2,21/06/2024 20:00,RB Arena,Netherlands,France,Group D,
 22,2,22/06/2024 14:00,Volksparkstadion,Georgia,Czechia,Group F,
 23,2,22/06/2024 17:00,BVB Stadion Dortmund,Türkiye,Portugal,Group F,
@@ -37,7 +37,7 @@ Match Number,Round Number,Date,Location,Home Team,Away Team,Group,Result
 36,3,26/06/2024 20:00,Volksparkstadion,Czechia,Türkiye,Group F,
 37,Round of 16,29/06/2024 20:00,BVB Stadion Dortmund,1A,2C,,
 38,Round of 16,29/06/2024 17:00,Olympiastadion,2A,2B,,  
-39,Round of 16,30/06/2024 20:00,Stadion Köln,1B,3A/D/E/F,,
+39,Round of 16,30/06/2024 20:00,Stadion Köln,Spain,3A/D/E/F,,
 40,Round of 16,30/06/2024 17:00,Arena AufSchalke,1C,3D/E/F,,
 41,Round of 16,01/07/2024 20:00,Frankfurt Stadion,1F,3A/B/C,,
 42,Round of 16,01/07/2024 17:00,Düsseldorf Arena,2D,2E,,

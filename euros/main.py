@@ -67,6 +67,7 @@ def create_app(filepath: str) -> Dash:
         background_callback_manager=background_callback_manager,
         suppress_callback_exceptions=config.suppress_callback_exceptions,
         title="Euros 2024",
+        assets_folder=Path(__file__).parent / "assets",
     )
 
     base_path = S3Path(config.base_path, client=S3Client(profile_name=config.profile))
@@ -113,9 +114,10 @@ def create_app(filepath: str) -> Dash:
                     id="tabs",
                     value="play-tab",
                 ),
-                html.Div(id="tabs-content"),
+                dbc.Row(id="tabs-content", justify="center"),
             ],
-            style={"width": "2000px", "margin-top": "50px", "margin-bottom": "50px"},
+            style={"maxWidth": "2000px", "margin-top": "50px", "margin-bottom": "50px"},
+            fluid=True,
         )
 
     # Define the layout
