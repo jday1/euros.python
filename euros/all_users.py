@@ -40,5 +40,4 @@ def create_all_users(group: str, base_path: S3Path) -> dash_table.DataTable:
         id="all-users",
         data=user_choices_df.to_dict("records"),
         style_table={"overflowX": "auto", "width": "100%"},
-        fixed_columns={'headers': True, 'data': 1}, 
     )
