@@ -132,7 +132,7 @@ def create_figure(standings: pd.DataFrame) -> go.Figure:
     )
 
     res["Date"] = pd.to_datetime(res["Date"], dayfirst=True)
-    df = res.sort_values(by=["user", "Round Number", "Date"])
+    df = res.sort_values(by=["user", "Round Number", "Date", "Match Number"])
     df["cumulative_points"] = df.groupby("user")["points_allocated"].cumsum()
 
     df["points_allocated_shown"] = df["points_allocated"].round(3)
