@@ -31,13 +31,12 @@ def create_user_choices(group: str, base_path: S3Path) -> pd.DataFrame:
     return user_choices_df
 
 
-def create_all_users(group: str, base_path: S3Path) -> dash_table.DataTable:
-    user_choices_df = create_user_choices(group, base_path)
+def create_all_users(user_choices: pd.DataFrame) -> dash_table.DataTable:
 
-    user_choices_df["team"] = user_choices_df["team"].apply(lambda x: x + " " + FLAG_UNICODE[x])
+    user_choices["team"] = user_choices["team"].apply(lambda x: x + " " + FLAG_UNICODE[x])
 
     return dash_table.DataTable(
         id="all-users",
-        data=user_choices_df.to_dict("records"),
+        data=user_choices.to_dict("records"),
         style_table={"overflowX": "auto", "width": "100%"},
     )

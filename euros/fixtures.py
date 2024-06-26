@@ -30,10 +30,6 @@ def create_fixtures(
     user_choices: pd.DataFrame,
     show_users: Callable,
     fixtures_id: str,
-    header_small: Callable = html.H4,
-    header_large: Callable = html.H3,
-    font_size: int = 14,
-    shorten_countries: bool = False,
 ):
 
     fixtures_formatted = [
@@ -41,12 +37,19 @@ def create_fixtures(
         fixtures_filter_select,
     ]
 
-    if shorten_countries:
-        fixtures_formatted += [
-            html.Br(),
-            filter_fixtures_button,
-            html.Br(),
-        ]
+    fixtures_formatted += [
+        dbc.Row(
+            dbc.Col(
+                [
+                    html.Br(),
+                    filter_fixtures_button,
+                    html.Br(),
+                ],
+                width=3,
+            ),
+            class_name="fixturesFilterButtonRow",
+        ),
+    ]
 
     if not fixtures_filter_table:
         return fixtures_formatted
@@ -58,7 +61,7 @@ def create_fixtures(
         fixtures_formatted += [
             html.Br(),
             dbc.Row(
-                [header_small(formatted_date)],
+                [html.H5(formatted_date, className="primaryText")],
                 style={"text-align": "center"},
             ),
         ]
@@ -70,48 +73,35 @@ def create_fixtures(
 
             home_team, away_team = row.loc["Home Team"], row.loc["Away Team"]
 
-            if shorten_countries:
-                if "Winner Match" in home_team:
-                    home_team = home_team.replace("Winner Match", "MW")
-                elif FLAG_UNICODE.get(home_team) is not None:
-                    home_team = [home_team[:3], FLAG_UNICODE.get(home_team, "")]
-                else:
-                    home_team = home_team
-
-                if "Winner Match" in away_team:
-                    away_team = away_team.replace("Winner Match", "MW")
-                elif FLAG_UNICODE.get(away_team) is not None:
-                    away_team = [away_team[:3], FLAG_UNICODE.get(away_team, "")]
-                else:
-                    away_team = away_team
+            if "Winner Match" in home_team:
+                home_team_short = home_team.replace("Winner Match", "MW")
+            elif FLAG_UNICODE.get(home_team) is not None:
+                home_team_short = [home_team[:3], FLAG_UNICODE.get(home_team, "")]
             else:
-                if FLAG_UNICODE.get(home_team) is not None:
-                    home_team = home_team + " " + FLAG_UNICODE.get(home_team, "")
-                if FLAG_UNICODE.get(away_team) is not None:
-                    away_team = away_team + " " + FLAG_UNICODE.get(away_team, "")
+                home_team_short = home_team
+
+            if "Winner Match" in away_team:
+                away_team_short = away_team.replace("Winner Match", "MW")
+            elif FLAG_UNICODE.get(away_team) is not None:
+                away_team_short = [away_team[:3], FLAG_UNICODE.get(away_team, "")]
+            else:
+                away_team_short = away_team
+
+            if FLAG_UNICODE.get(home_team) is not None:
+                home_team_long = home_team + " " + FLAG_UNICODE.get(home_team, "")
+            if FLAG_UNICODE.get(away_team) is not None:
+                away_team_long = away_team + " " + FLAG_UNICODE.get(away_team, "")
 
             if show_users():
 
                 home_tokens = (
-                    ", ".join(
-                        [
-                            f"""{k} ({v})"""
-                            for k, v in lookup_team_owners(row.loc["Home Team"], user_choices).items()
-                            if v > 0 and k != "total"
-                        ]
-                    )
-                    if row.loc["Home Team"] in FLAG_UNICODE.keys()
+                    ", ".join([f"""{k} ({v})""" for k, v in lookup_team_owners(home_team, user_choices).items() if v > 0 and k != "total"])
+                    if home_team in FLAG_UNICODE.keys()
                     else ""
                 )
                 away_tokens = (
-                    ", ".join(
-                        [
-                            f"""{k} ({v})"""
-                            for k, v in lookup_team_owners(row.loc["Away Team"], user_choices).items()
-                            if v > 0 and k != "total"
-                        ]
-                    )
-                    if row.loc["Away Team"] in FLAG_UNICODE.keys()
+                    ", ".join([f"""{k} ({v})""" for k, v in lookup_team_owners(away_team, user_choices).items() if v > 0 and k != "total"])
+                    if away_team in FLAG_UNICODE.keys()
                     else ""
                 )
 
@@ -119,31 +109,68 @@ def create_fixtures(
                     html.Br(),
                     dbc.Row(
                         [
-                            dbc.Col(home_tokens, style={"text-align": "left", "fontSize": font_size}, width=2),  # TODO
+                            dbc.Col(home_tokens, style={"text-align": "left"}, width=2, class_name="secondaryText"),  # TODO
                             dbc.Col(
                                 dbc.Row(
                                     [
                                         dbc.Col(
                                             f"""Match {row["Match Number"]}, {matchday}, {row["Location"]}""",
-                                            style={"text-align": "center", "fontSize": font_size},
+                                            style={
+                                                "text-align": "center",
+                                            },
                                             width=12,
+                                            class_name="secondaryText",
                                         ),
-                                        dbc.Col(header_large(home_team), style={"text-align": "right"}, width=4),
                                         dbc.Col(
-                                            [header_small(row.loc["timestamp"] if row["Result"] == "" else row["Result"])],
+                                            html.H5(home_team_short, className="headerLarge"),
+                                            style={"text-align": "right"},
+                                            width=4,
+                                            class_name="shortTeam",
+                                        ),
+                                        dbc.Col(
+                                            html.H5(home_team_long, className="headerLarge"),
+                                            style={"text-align": "right"},
+                                            width=4,
+                                            class_name="longTeam",
+                                        ),
+                                        dbc.Col(
+                                            [
+                                                html.H5(
+                                                    row.loc["timestamp"] if row["Result"] == "" else row["Result"],
+                                                    className="primaryText",
+                                                )
+                                            ],
                                             style={"text-align": "center"},
                                             width=4,
                                         ),
-                                        dbc.Col(header_large(away_team), style={"text-align": "left"}, width=4),
+                                        dbc.Col(
+                                            html.H5(away_team_short, className="headerLarge"),
+                                            style={"text-align": "left"},
+                                            width=4,
+                                            class_name="shortTeam",
+                                        ),
+                                        dbc.Col(
+                                            html.H5(away_team_long, className="headerLarge"),
+                                            style={"text-align": "left"},
+                                            width=4,
+                                            class_name="longTeam",
+                                        ),
                                     ],
                                     align="center",
                                 ),
                                 width=8,
                             ),
-                            dbc.Col(away_tokens, style={"text-align": "right", "fontSize": font_size}, width=2),
+                            dbc.Col(
+                                away_tokens,
+                                style={
+                                    "text-align": "right",
+                                },
+                                width=2,
+                                class_name="secondaryText",
+                            ),
                         ],
                         align="center",
-                        style={"minHeight": "150px"},
+                        class_name="fixtureHeight",
                     ),
                 ]
 
@@ -159,16 +186,22 @@ def create_fixtures(
                                     [
                                         dbc.Col(
                                             f"""Match {row["Match Number"]}, {matchday}, {row["Location"]}""",
-                                            style={"text-align": "center", "fontSize": font_size},
+                                            style={"text-align": "center"},
                                             width=12,
+                                            class_name="secondaryText",
                                         ),
-                                        dbc.Col(header_large(home_team), style={"text-align": "right"}, width=5),
+                                        dbc.Col(html.H5(home_team), style={"text-align": "right"}, width=5),
                                         dbc.Col(
-                                            [header_small(row.loc["timestamp"] if row["Result"] == "" else row["Result"])],
+                                            [
+                                                html.H5(
+                                                    row.loc["timestamp"] if row["Result"] == "" else row["Result"],
+                                                    className="primaryText",
+                                                )
+                                            ],
                                             style={"text-align": "center"},
                                             width=2,
                                         ),
-                                        dbc.Col(header_large(away_team), style={"text-align": "left"}, width=5),
+                                        dbc.Col(html.H5(away_team), style={"text-align": "left"}, width=5),
                                     ]
                                 ),
                                 width=8,
@@ -176,18 +209,21 @@ def create_fixtures(
                             dbc.Col([], style={"text-align": "right"}, width=2),
                         ],
                         align="center",
-                        style={"minHeight": "150px"},
+                        class_name="fixtureHeight",
                     ),
                 ]
 
     return dbc.Col(
         children=fixtures_formatted,
-        className=fixtures_id,
     )
 
 
 def create_fixtures_tab(
-    fixtures_filter_table: list[dict], fixtures_filter_select: dcc.Dropdown, filter_fixtures_button: dbc.Button, base_path: S3Path, show_users: Callable, group: str
+    fixtures_filter_table: list[dict],
+    fixtures_filter_select: dcc.Dropdown,
+    filter_fixtures_button: dbc.Button,
+    user_choices: pd.DataFrame,
+    show_users: Callable,
 ) -> html.Div:
 
     fixtures = pd.DataFrame(fixtures_filter_table)
@@ -201,8 +237,6 @@ def create_fixtures_tab(
     # Sort the DataFrame by the datetime column
     fixtures = fixtures.sort_values(by="datestamp")
 
-    user_choices = create_user_choices(group, base_path)
-
     return [
         create_fixtures(
             fixtures_filter_table,
@@ -212,18 +246,14 @@ def create_fixtures_tab(
             user_choices,
             show_users,
             fixtures_id="small-fixtures",
-            font_size=8,
-            header_small=html.H6,
-            header_large=html.H6,
-            shorten_countries=True,
         ),
-        create_fixtures(
-            fixtures_filter_table,
-            fixtures_filter_select,
-            filter_fixtures_button,
-            fixtures,
-            user_choices,
-            show_users,
-            fixtures_id="large-fixtures",
-        ),
+        # create_fixtures(
+        #     fixtures_filter_table,
+        #     fixtures_filter_select,
+        #     filter_fixtures_button,
+        #     fixtures,
+        #     user_choices,
+        #     show_users,
+        #     fixtures_id="large-fixtures",
+        # ),
     ]

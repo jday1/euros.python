@@ -21,7 +21,7 @@ STANDINGS_COLOR_PALETTE = [
     "#bcbd22",  # Yellow-green
     "#17becf",  # Cyan
     "#2f4f4f",  # Slate
-    "#ffbb78"   # Light orange
+    "#ffbb78",  # Light orange
 ]
 
 
@@ -76,7 +76,7 @@ def allocate_points(row: pd.Series) -> float:
         raise ValueError(f"Unknown round number: {row['Round Number']}")
 
 
-def get_standings(group: str, base_path: S3Path) -> pd.DataFrame | None:
+def get_standings(user_choices: pd.DataFrame, base_path: S3Path) -> pd.DataFrame | None:
 
     fixtures = load_fixtures(base_path)
     fixtures["Date"] = pd.to_datetime(fixtures["Date"], dayfirst=True)
@@ -99,8 +99,6 @@ def get_standings(group: str, base_path: S3Path) -> pd.DataFrame | None:
         return None
 
     results["Points To Allocate"] = results.apply(allocate_points, axis=1)
-
-    user_choices = create_user_choices(group, base_path)
 
     user_choices.set_index("team", inplace=True)
 
@@ -188,7 +186,7 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
         style_cell_conditional=[
             {"if": {"column_id": "position"}, "minWidth": "20px", "maxWidth": "20px"},
             {"if": {"column_id": "user"}, "minWidth": "75px", "maxWidth": "75px"},
-            {"if": {"column_id": "points_allocated"}, "minWidth": "50px", "maxWidth": "50px"},
+            {"if": {"column_id": "points_allocated"}, "minWidth": "75px", "maxWidth": "75px"},
         ],
         style_cell={
             "minWidth": "50px",
@@ -230,9 +228,9 @@ def create_standings(
     ]
 
 
-def create_standings_tab(group: str, base_path: S3Path) -> html.Div:
+def create_standings_tab(user_choices: pd.DataFrame, base_path: S3Path) -> html.Div:
 
-    standings: pd.DataFrame | None = get_standings(group, base_path)
+    standings: pd.DataFrame | None = get_standings(user_choices.copy(deep=True), base_path=base_path)
 
     if standings is None:
         return dbc.Col(

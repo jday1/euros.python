@@ -402,7 +402,7 @@ def create_knockout_fig_large(ko_fixtures: pd.DataFrame) -> go.Figure:
 
 
 def create_knockout_tab(base_path: S3Path) -> html.Div:
-    
+
     fixtures = load_fixtures(base_path)
     ko_fixtures = fixtures[
         ~fixtures["Round Number"].isin(
@@ -417,7 +417,7 @@ def create_knockout_tab(base_path: S3Path) -> html.Div:
     ko_fixtures.loc[:, ["color"]] = ko_fixtures["Round Number"].apply(
         lambda x: "blue" if x == "Round of 16" else "red" if x == "Quarter Finals" else "green" if x == "Semi Finals" else "gold"
     )
-    
+
     return [
         dbc.Col(
             html.Div(

@@ -7,7 +7,7 @@ from cloudpathlib import S3Path
 def load_fixtures(base_path: S3Path) -> pd.DataFrame:
     # TODO - pandera?
     fixtures_path = base_path / "fixtures.csv"
-    df = pd.read_csv(fixtures_path.fspath, keep_default_na=False)
+    df = pd.read_csv("fixtures.csv", keep_default_na=False)
     return df
 
 

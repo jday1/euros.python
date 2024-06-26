@@ -18,6 +18,7 @@ from flask import Flask, request
 from pydantic import BaseModel
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
+from euros.all_users import create_user_choices
 from euros.config import load_fixtures, load_users
 from euros.fixtures import create_fixtures_tab
 from euros.groups import create_groups_tab
@@ -73,6 +74,8 @@ def create_app(filepath: str) -> Dash:
 
     base_path = S3Path(config.base_path, client=S3Client(profile_name=config.profile))
 
+    user_choices = create_user_choices(group=config.user_group, base_path=base_path)
+
     cutoff_time = datetime.strptime(config.cutoff_time, "%Y-%m-%d %H:%M:%S").astimezone(pytz.timezone("Europe/London"))
 
     def show_users() -> bool:
@@ -96,7 +99,11 @@ def create_app(filepath: str) -> Dash:
         multi=True,
         placeholder="Filter fixtures by Team",
     )
-    fixtures_filter_button = dbc.Button("Filter", id="fixtures-filter-button", color="primary")
+    fixtures_filter_button = dbc.Button(
+        "Filter",
+        id="fixtures-filter-button",
+        color="primary",
+    )
 
     def create_layout() -> dbc.Container:
         return dbc.Container(
@@ -131,11 +138,15 @@ def create_app(filepath: str) -> Dash:
         Input("fixtures-filter-button", "n_clicks"),
         State("fixtures-filter-table", "data"),
     )
-    def update_fixture_filter_table(value: list[dict] | None, fixtures_filter_button_n_clicks: int, previous_data: list[dict]) -> list[dict]:
+    def update_fixture_filter_table(
+        value: list[dict] | None, fixtures_filter_button_n_clicks: int, previous_data: list[dict]
+    ) -> list[dict]:
 
         # If the button exists, but is not clicked, return the current table - don't do anything!
         if (
-            fixtures_filter_button_n_clicks is not None and fixtures_filter_button_n_clicks > 0 and dash.callback_context.triggered[0]["prop_id"] == "fixtures-filter-value.value"
+            fixtures_filter_button_n_clicks is not None
+            and fixtures_filter_button_n_clicks > 0
+            and dash.callback_context.triggered[0]["prop_id"] == "fixtures-filter-value.value"
         ):
             return previous_data
 
@@ -165,7 +176,14 @@ def create_app(filepath: str) -> Dash:
     def render_content(tab: str, username: str, fixtures_filter_table: list[dict]) -> html.Div:
 
         if tab == "play-tab":
-            return create_play_tab(username, config.user_group, base_path=base_path, show_users=show_users, cutoff=config.cutoff_time)
+            return create_play_tab(
+                username,
+                config.user_group,
+                base_path=base_path,
+                show_users=show_users,
+                cutoff=config.cutoff_time,
+                user_choices=user_choices,
+            )
         elif tab == "groups-tab":
             return create_groups_tab(base_path=base_path)
         elif tab == "knockout-tab":
@@ -175,12 +193,11 @@ def create_app(filepath: str) -> Dash:
                 fixtures_filter_table,
                 fixtures_filter_select,
                 fixtures_filter_button,
-                base_path=base_path,
+                user_choices=user_choices,
                 show_users=show_users,
-                group=config.user_group,
             )
         elif tab == "standings-tab":
-            return create_standings_tab(group=config.user_group, base_path=base_path)
+            return create_standings_tab(user_choices=user_choices, base_path=base_path)
 
     @app.callback(
         Output(component_id="username", component_property="data"),
