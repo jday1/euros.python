@@ -37,16 +37,16 @@ Match Number,Round Number,Date,Location,Home Team,Away Team,Group,Result
 36,3,26/06/2024 20:00,Volksparkstadion,Czechia,Türkiye,Group F,1-2
 37,Round of 16,29/06/2024 20:00,BVB Stadion Dortmund,Germany,Denmark,,2-0
 38,Round of 16,29/06/2024 17:00,Olympiastadion,Switzerland,Italy,,2-0
-39,Round of 16,30/06/2024 20:00,Stadion Köln,Spain,Georgia,,
-40,Round of 16,30/06/2024 17:00,Arena AufSchalke,England,Slovakia,,
+39,Round of 16,30/06/2024 20:00,Stadion Köln,Spain,Georgia,,4-1
+40,Round of 16,30/06/2024 17:00,Arena AufSchalke,England,Slovakia,,2-1
 41,Round of 16,01/07/2024 20:00,Frankfurt Stadion,Portugal,Slovenia,,
 42,Round of 16,01/07/2024 17:00,Düsseldorf Arena,France,Belgium,,
 43,Round of 16,02/07/2024 17:00,Fußball Arena München,Romania,Netherlands,,
 44,Round of 16,02/07/2024 20:00,RB Arena,Austria,Türkiye,,
-45,Quarter Finals,05/07/2024 17:00,Arena Stuttgart,Winner Match 39,Germany,,
+45,Quarter Finals,05/07/2024 17:00,Arena Stuttgart,Spain,Germany,,
 46,Quarter Finals,05/07/2024 20:00,Volksparkstadion,Winner Match 41,Winner Match 42,,
 47,Quarter Finals,06/07/2024 17:00,Düsseldorf Arena,Winner Match 43,Winner Match 44,,
-48,Quarter Finals,06/07/2024 20:00,Olympiastadion,Winner Match 40,Switzerland,,
+48,Quarter Finals,06/07/2024 20:00,Olympiastadion,England,Switzerland,,
 49,Semi Finals,09/07/2024 20:00,Fußball Arena München,Winner Match 45,Winner Match 46,,
 50,Semi Finals,10/07/2024 20:00,BVB Stadion Dortmund,Winner Match 47,Winner Match 48,,
 51,Final,14/07/2024 20:00,Olympiastadion,Winner Match 49,Winner Match 50,,
