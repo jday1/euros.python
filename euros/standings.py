@@ -134,6 +134,8 @@ def create_figure(standings: pd.DataFrame, x_axis="Date", y_axis="cumulative_poi
 
     df["rank"] = df.groupby(["Match Number", "Date"])["cumulative_points"].rank(method='min', ascending=False)
 
+    max_rank = int(df["rank"].max())
+
     df["points_allocated_shown"] = df["points_allocated"].round(3)
     df["cumulative_points_shown"] = df["cumulative_points"].round(3)
 
@@ -162,7 +164,7 @@ def create_figure(standings: pd.DataFrame, x_axis="Date", y_axis="cumulative_poi
     }
 
     y_axis_lookup = {
-        "rank": dict(title="Rank", range=[13, 0], tickvals=list(range(12, 0, -1))),
+        "rank": dict(title="Rank", range=[max_rank + 1, 0], tickvals=list(range(max_rank, 0, -1))),
         "cumulative_points": dict(title="Total Dividend"),
     }
 
