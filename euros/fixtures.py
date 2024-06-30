@@ -89,8 +89,12 @@ def create_fixtures(
 
             if FLAG_UNICODE.get(home_team) is not None:
                 home_team_long = home_team + " " + FLAG_UNICODE.get(home_team, "")
+            else:
+                home_team_long = home_team
             if FLAG_UNICODE.get(away_team) is not None:
                 away_team_long = away_team + " " + FLAG_UNICODE.get(away_team, "")
+            else:
+                away_team_long = away_team
 
             if show_users():
 

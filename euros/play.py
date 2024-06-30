@@ -27,7 +27,7 @@ def load_user_choices(username: str, group: str, base_path: S3Path) -> list[dict
     return records
 
 
-def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Callable, cutoff: str, user_choices: pd.DataFrame) -> dcc.Tab:
+def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Callable, cutoff: str, user_choices: pd.DataFrame, fixtures: pd.DataFrame) -> dcc.Tab:
 
     do_show_users = show_users()
 
@@ -127,7 +127,7 @@ def create_play_tab(username: str, group: str, base_path: S3Path, show_users: Ca
             html.Br(),
             dbc.Row(
                 (
-                    create_all_users(user_choices.copy(deep=True))
+                    create_all_users(user_choices.copy(deep=True), fixtures)
                     if do_show_users
                     else html.H3("Once they are finalised, everyone's choices will appear here.")
                 ),

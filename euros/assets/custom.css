@@ -32,6 +32,14 @@
     .shortTeam {
         display: block !important;
     }
+
+    .standings-table-width {
+        width: 100%
+    }
+
+    .standings-figure-width {
+        width: 100%
+    }
 }
 
 /* Show the div only when the screen width is between 601px and 1200px */
@@ -59,6 +67,14 @@
     .fixtureHeight {
         min-height: 150px !important;
     }
+
+    .standings-table-width {
+        width: 33%
+    }
+
+    .standings-figure-width {
+        width: 66%
+    }
 }
 
 /* Show the div only when the screen width is greater than 1200px */
@@ -85,5 +101,13 @@
 
     .fixtureHeight {
         min-height: 150px !important;
+    }
+
+    .standings-table-width {
+        width: 33%
+    }
+
+    .standings-figure-width {
+        width: 66%
     }
 }

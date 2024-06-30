@@ -31,12 +31,32 @@ def create_user_choices(group: str, base_path: S3Path) -> pd.DataFrame:
     return user_choices_df
 
 
-def create_all_users(user_choices: pd.DataFrame) -> dash_table.DataTable:
+def create_all_users(user_choices: pd.DataFrame, fixtures: pd.DataFrame) -> dash_table.DataTable:
+
+    unplayed_fixtures = fixtures[fixtures["Result"] == ""]
+
+    remaining_teams = pd.concat([unplayed_fixtures["Home Team"], unplayed_fixtures["Away Team"]]).drop_duplicates()
+
+    remaining_points = user_choices[user_choices["team"].isin(remaining_teams)].sum()
+
+    remaining_points["team"] = "Points Left"
 
     user_choices["team"] = user_choices["team"].apply(lambda x: x + " " + FLAG_UNICODE[x])
 
+    table_data = pd.concat([user_choices, remaining_points.to_frame().T], ignore_index=True, ).to_dict("records")
+
     return dash_table.DataTable(
         id="all-users",
-        data=user_choices.to_dict("records"),
+        data=table_data,
         style_table={"overflowX": "auto", "width": "100%"},
+        style_data_conditional=[
+            {
+                'if': {
+                    'row_index': len(table_data) - 1
+                },
+                'fontWeight': 'bold',
+                'borderBottom': '3px solid black',
+                'borderTop': '3px solid black'
+            }
+        ]
     )

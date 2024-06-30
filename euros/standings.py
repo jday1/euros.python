@@ -6,7 +6,6 @@ import plotly.graph_objects as go
 from cloudpathlib import S3Path
 from dash import dash_table, dcc, html
 
-from euros.all_users import create_user_choices
 from euros.config import load_fixtures
 
 STANDINGS_COLOR_PALETTE = [
@@ -121,7 +120,7 @@ def get_standings(user_choices: pd.DataFrame, base_path: S3Path) -> pd.DataFrame
     return merged_results
 
 
-def create_figure(standings: pd.DataFrame) -> go.Figure:
+def create_figure(standings: pd.DataFrame, x_axis="Date", y_axis="cumulative_points") -> go.Figure:
 
     res = (
         standings.groupby(["Round Number", "Date", "user", "Match Number", "Home Team", "Away Team", "Result"])["points_allocated"]
@@ -130,33 +129,46 @@ def create_figure(standings: pd.DataFrame) -> go.Figure:
     )
 
     res["Date"] = pd.to_datetime(res["Date"], dayfirst=True)
-    df = res.sort_values(by=["user", "Round Number", "Date", "Match Number"])
+    df = res.sort_values(by=["user", "Round Number", x_axis])
     df["cumulative_points"] = df.groupby("user")["points_allocated"].cumsum()
+
+    df["rank"] = df.groupby(["Match Number", "Date"])["cumulative_points"].rank(method='min', ascending=False)
 
     df["points_allocated_shown"] = df["points_allocated"].round(3)
     df["cumulative_points_shown"] = df["cumulative_points"].round(3)
 
     # Create traces for each user
     data = []
+
     for num, (user, group) in enumerate(df.groupby("user")):
 
         trace = go.Scatter(
-            x=group["Date"],
-            y=group["cumulative_points"],
+            x=group[x_axis],
+            y=group[y_axis],
             mode="lines+markers",
             name=user,
             line=dict(color=STANDINGS_COLOR_PALETTE[num % len(STANDINGS_COLOR_PALETTE)]),
             customdata=group,
             hovertemplate="<b>%{customdata[4]} %{customdata[6]} %{customdata[5]}</b>"
-            + "<br><b>Points Gained: %{customdata[9]}</b>"
-            + "<br><b>Cumulative Total: %{customdata[10]}</b>"
+            + "<br><b>Points Gained: %{customdata[10]}</b>"
+            + "<br><b>Cumulative Total: %{customdata[11]}</b>"
             + "<extra></extra>",
         )
         data.append(trace)
 
+    x_axis_lookup = {
+        "Date": dict(title="Date", range=["2024-06-14", "2024-07-14"], tickformat="%Y-%m-%d", tickangle=-45),
+        "Match Number": dict(title="Match Number", tickangle=-45),
+    }
+
+    y_axis_lookup = {
+        "rank": dict(title="Rank", range=[13, 0], tickvals=list(range(12, 0, -1))),
+        "cumulative_points": dict(title="Total Dividend"),
+    }
+
     layout = go.Layout(
-        xaxis=dict(title="Date", range=["2024-06-14", "2024-07-14"], tickformat="%Y-%m-%d", tickangle=-45),
-        yaxis=dict(title="Total Dividend"),
+        xaxis=x_axis_lookup[x_axis],
+        yaxis=y_axis_lookup[y_axis],
         # width=800,
         height=800,
     )
@@ -196,39 +208,23 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
 
 
 def create_standings(
-    standings_table: dash_table.DataTable,
     standings_figure: go.Figure,
-    table_width: int,
-    graph_width: int,
     static_plot: bool,
-) -> list:
 
-    return [
-        html.Br(),
-        dbc.Row(
-            [
-                dbc.Col(
-                    standings_table,
-                    width=table_width,
-                ),
-                dbc.Col(
-                    html.Div(
-                        dcc.Graph(
-                            figure=standings_figure,
-                            style={"minWidth": "400px", "width": "100%"},
-                            config={"staticPlot": static_plot},
-                        ),
-                        style={"overflowX": "auto"},
-                    ),
-                    width=graph_width,
-                ),
-            ],
-            align="center",
-        ),
-    ]
+) -> dcc.Graph:
+    
+    return dcc.Graph(
+        figure=standings_figure,
+        style={"minWidth": "400px", "width": "100%"},
+        config={"staticPlot": static_plot},
+        id="standings-graph-static" if static_plot else "standings-graph",
+    )
 
 
-def create_standings_tab(user_choices: pd.DataFrame, base_path: S3Path) -> html.Div:
+
+def create_standings_tab(
+    user_choices: pd.DataFrame, base_path: S3Path,
+) -> html.Div:
 
     standings: pd.DataFrame | None = get_standings(user_choices.copy(deep=True), base_path=base_path)
 
@@ -247,9 +243,90 @@ def create_standings_tab(user_choices: pd.DataFrame, base_path: S3Path) -> html.
         standings_figure_small = copy.deepcopy(standings_figure)
         standings_figure_small.update_xaxes(autorange=True)
 
+        standings_x_axis = dcc.Dropdown(
+            id="standings-x-axis",
+            options=[{"value": x, "label": x} for x in ["Date", "Match Number"]],
+            persistence=True,
+            persistence_type="memory",
+            value="Date",
+            clearable=False,
+        )   
+
+        standings_y_axis = dcc.Dropdown(
+            id="standings-y-axis",
+            options=[{"value": "cumulative_points", "label": "Total Dividend"}, {"value": "rank", "label": "Rank"}],
+            persistence=True,
+            persistence_type="memory",
+            value="cumulative_points",
+            clearable=False,   
+        )
+
+        return dbc.Col(
+            [
+                html.Br(),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            standings_table,
+                            className="standings-table-width"
+                        ),
+                        dbc.Col(
+                            [
+
+                                html.Div(
+                                    [
+                                        create_standings(standings_figure=standings_figure, static_plot=False)
+                                    ],
+                                    style={"overflowX": "auto"},
+                                    className="large-standings"
+                                ),
+
+                                html.Div(
+                                    [
+                                        create_standings(standings_figure=standings_figure, static_plot=True)
+                                    ],
+                                    style={"overflowX": "auto"},
+                                    className="small-standings"
+                                ),
+                                dbc.Row(
+                                    [
+                                        dbc.Col(standings_x_axis, width={"size": 4, "offset": 2}),
+                                        dbc.Col(standings_y_axis, width={"size": 4}),
+                                    ]
+                                )
+                            ],
+                            className="standings-figure-width"
+                        ),
+                    ],
+                    align="center",
+                ),
+            ]
+        ) 
+
         return [
-            dbc.Col(children=create_standings(standings_table, standings_figure, 4, 8, static_plot=False), className="large-standings"),
             dbc.Col(
-                children=create_standings(standings_table, standings_figure_small, 12, 12, static_plot=True), className="small-standings"
+                children=create_standings(
+                    standings_table,
+                    standings_figure,
+                    4,
+                    8,
+                    static_plot=False,
+                    standings_x_axis=standings_x_axis,
+                    standings_y_axis=standings_y_axis,
+                ),
+                className="large-standings",
+            ),
+            dbc.Col(
+                children=create_standings(
+                    standings_table,
+                    standings_figure_small,
+                    12,
+                    12,
+                    static_plot=True,
+                    standings_x_axis=standings_x_axis,
+                    standings_y_axis=standings_y_axis,
+                    
+                ),
+                className="small-standings",
             ),
         ]

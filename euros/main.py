@@ -1,3 +1,4 @@
+import copy
 import tempfile
 from argparse import ArgumentParser
 from datetime import datetime
@@ -24,7 +25,7 @@ from euros.fixtures import create_fixtures_tab
 from euros.groups import create_groups_tab
 from euros.knockout import create_knockout_tab
 from euros.play import create_play_tab
-from euros.standings import create_standings_tab
+from euros.standings import create_figure, create_standings_tab, get_standings
 
 
 class Config(BaseModel):
@@ -87,7 +88,8 @@ def create_app(filepath: str) -> Dash:
         secret_key="kIwjEmZ4fuv09Gwb+5R7IkI2Ftl8JVcA10ExyQ81",
     )
 
-    fixtures = load_fixtures(base_path)[["Home Team", "Away Team"]]
+    fixtures_df = load_fixtures(base_path)
+    fixtures = fixtures_df[["Home Team", "Away Team"]]
     fixtures_formatted = pd.DataFrame(pd.concat([fixtures["Home Team"], fixtures["Away Team"]]).unique(), columns=["label"])
     fixtures_formatted["value"] = fixtures_formatted["label"]
 
@@ -183,6 +185,7 @@ def create_app(filepath: str) -> Dash:
                 show_users=show_users,
                 cutoff=config.cutoff_time,
                 user_choices=user_choices,
+                fixtures=fixtures_df,
             )
         elif tab == "groups-tab":
             return create_groups_tab(base_path=base_path)
@@ -197,7 +200,9 @@ def create_app(filepath: str) -> Dash:
                 show_users=show_users,
             )
         elif tab == "standings-tab":
-            return create_standings_tab(user_choices=user_choices, base_path=base_path)
+            return create_standings_tab(
+                user_choices=user_choices, base_path=base_path,
+            )
 
     @app.callback(
         Output(component_id="username", component_property="data"),
@@ -260,6 +265,23 @@ def create_app(filepath: str) -> Dash:
         app.server.wsgi_app = ProfilerMiddleware(
             app.server.wsgi_app, sort_by=("cumtime", "tottime"), restrictions=[50], stream=None, profile_dir=PROF_DIR
         )
+
+    @app.callback(
+        Output("standings-graph", "figure"),
+        Output("standings-graph-static", "figure"),
+        Input("standings-x-axis", "value"),
+        Input("standings-y-axis", "value"),
+        prevent_initial_call=True,
+    )
+    def update_standing_figure(x_axis: str, y_axis: str):
+        standings: pd.DataFrame | None = get_standings(user_choices.copy(deep=True), base_path=base_path)
+
+        standings_figure = create_figure(standings, x_axis, y_axis)
+
+        standings_figure_small = copy.deepcopy(standings_figure)
+        standings_figure_small.update_xaxes(autorange=True)
+
+        return standings_figure, standings_figure_small
 
     return app, config
 
