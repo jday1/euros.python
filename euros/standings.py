@@ -223,7 +223,6 @@ def create_standings(
     )
 
 
-
 def create_standings_tab(
     user_choices: pd.DataFrame, base_path: S3Path,
 ) -> html.Div:
