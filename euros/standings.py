@@ -132,7 +132,7 @@ def create_figure(standings: pd.DataFrame, x_axis="Date", y_axis="cumulative_poi
     df = res.sort_values(by=["user", "Round Number", x_axis])
     df["cumulative_points"] = df.groupby("user")["points_allocated"].cumsum()
 
-    df["rank"] = df.groupby(["Match Number", "Date"])["cumulative_points"].rank(method='min', ascending=False)
+    df["rank"] = df.groupby(["Match Number", "Date"])["cumulative_points"].rank(method="min", ascending=False)
 
     max_rank = int(df["rank"].max())
 
@@ -212,9 +212,8 @@ def create_current_standings(standings: pd.DataFrame) -> dash_table.DataTable:
 def create_standings(
     standings_figure: go.Figure,
     static_plot: bool,
-
 ) -> dcc.Graph:
-    
+
     return dcc.Graph(
         figure=standings_figure,
         style={"minWidth": "400px", "width": "100%"},
@@ -224,7 +223,8 @@ def create_standings(
 
 
 def create_standings_tab(
-    user_choices: pd.DataFrame, base_path: S3Path,
+    user_choices: pd.DataFrame,
+    base_path: S3Path,
 ) -> html.Div:
 
     standings: pd.DataFrame | None = get_standings(user_choices.copy(deep=True), base_path=base_path)
@@ -251,7 +251,7 @@ def create_standings_tab(
             persistence_type="memory",
             value="Date",
             clearable=False,
-        )   
+        )
 
         standings_y_axis = dcc.Dropdown(
             id="standings-y-axis",
@@ -259,7 +259,7 @@ def create_standings_tab(
             persistence=True,
             persistence_type="memory",
             value="cumulative_points",
-            clearable=False,   
+            clearable=False,
         )
 
         return dbc.Col(
@@ -267,42 +267,33 @@ def create_standings_tab(
                 html.Br(),
                 dbc.Row(
                     [
-                        dbc.Col(
-                            standings_table,
-                            className="standings-table-width"
-                        ),
+                        dbc.Col(standings_table, className="standings-table-width"),
                         dbc.Col(
                             [
-
                                 html.Div(
-                                    [
-                                        create_standings(standings_figure=standings_figure, static_plot=False)
-                                    ],
+                                    [create_standings(standings_figure=standings_figure, static_plot=False)],
                                     style={"overflowX": "auto"},
-                                    className="large-standings"
+                                    className="large-standings",
                                 ),
-
                                 html.Div(
-                                    [
-                                        create_standings(standings_figure=standings_figure, static_plot=True)
-                                    ],
+                                    [create_standings(standings_figure=standings_figure, static_plot=True)],
                                     style={"overflowX": "auto"},
-                                    className="small-standings"
+                                    className="small-standings",
                                 ),
                                 dbc.Row(
                                     [
                                         dbc.Col(standings_x_axis, width={"size": 4, "offset": 2}),
                                         dbc.Col(standings_y_axis, width={"size": 4}),
                                     ]
-                                )
+                                ),
                             ],
-                            className="standings-figure-width"
+                            className="standings-figure-width",
                         ),
                     ],
                     align="center",
                 ),
             ]
-        ) 
+        )
 
         return [
             dbc.Col(
@@ -326,7 +317,6 @@ def create_standings_tab(
                     static_plot=True,
                     standings_x_axis=standings_x_axis,
                     standings_y_axis=standings_y_axis,
-                    
                 ),
                 className="small-standings",
             ),

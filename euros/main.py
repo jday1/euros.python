@@ -89,17 +89,23 @@ def create_app(filepath: str) -> Dash:
     )
 
     fixtures_df = load_fixtures(base_path)
-    fixtures = fixtures_df[["Home Team", "Away Team"]]
-    fixtures_formatted = pd.DataFrame(pd.concat([fixtures["Home Team"], fixtures["Away Team"]]).unique(), columns=["label"])
-    fixtures_formatted["value"] = fixtures_formatted["label"]
+
+    teams = [
+        {"value": f"Team:{team}", "label": html.Span(team, style={"color": "blue"})}
+        for team in pd.concat([fixtures_df["Home Team"], fixtures_df["Away Team"]]).unique().tolist()
+    ]
+    rounds = [
+        {"value": f"Round Number:{match_round}", "label": html.Span(match_round, style={"color": "navy"})}
+        for match_round in fixtures_df["Round Number"].unique().tolist()
+    ]
 
     fixtures_filter_select = dcc.Dropdown(
         id="fixtures-filter-value",
-        options=fixtures_formatted.to_dict("records"),
+        options=teams + rounds,
         persistence=True,
         persistence_type="memory",
         multi=True,
-        placeholder="Filter fixtures by Team",
+        placeholder="Filter fixtures by Team or Round",
     )
     fixtures_filter_button = dbc.Button(
         "Filter",
@@ -141,7 +147,7 @@ def create_app(filepath: str) -> Dash:
         State("fixtures-filter-table", "data"),
     )
     def update_fixture_filter_table(
-        value: list[dict] | None, fixtures_filter_button_n_clicks: int, previous_data: list[dict]
+        values: list[str] | None, fixtures_filter_button_n_clicks: int, previous_data: list[dict]
     ) -> list[dict]:
 
         # If the button exists, but is not clicked, return the current table - don't do anything!
@@ -154,14 +160,32 @@ def create_app(filepath: str) -> Dash:
 
         fixtures: pd.DataFrame = load_fixtures(base_path)
 
-        if value is None or len(value) == 0:
+        if values is None or len(values) == 0:
             filtered_fixtures = fixtures
         else:
-            condition = reduce(
-                lambda acc, col: acc | fixtures[col].isin(value), ["Home Team", "Away Team"], pd.Series([False] * len(fixtures))
-            )
 
-            filtered_fixtures = fixtures[condition]
+            values_split = [v.split(":") for v in values]
+
+            team_values = []
+            round_values = []
+
+            for key, v in values_split:
+                if key == "Team":
+                    team_values.append(v)
+                elif key == "Round Number":
+                    round_values.append(v)
+                else:
+                    raise ValueError(f"Invalid key: {key}")
+
+            if team_values:
+                filtered_fixtures = fixtures[(fixtures["Home Team"].isin(team_values)) | (fixtures["Away Team"].isin(team_values))]
+            else:
+                filtered_fixtures = fixtures
+
+            if round_values:
+                filtered_fixtures = filtered_fixtures[filtered_fixtures["Round Number"].isin(round_values)]
+            else:
+                filtered_fixtures = filtered_fixtures
 
         filtered_fixtures_table: list[dict] = filtered_fixtures.to_dict("records")
 
@@ -201,7 +225,8 @@ def create_app(filepath: str) -> Dash:
             )
         elif tab == "standings-tab":
             return create_standings_tab(
-                user_choices=user_choices, base_path=base_path,
+                user_choices=user_choices,
+                base_path=base_path,
             )
 
     @app.callback(

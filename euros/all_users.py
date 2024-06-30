@@ -43,7 +43,10 @@ def create_all_users(user_choices: pd.DataFrame, fixtures: pd.DataFrame) -> dash
 
     user_choices["team"] = user_choices["team"].apply(lambda x: x + " " + FLAG_UNICODE[x])
 
-    table_data = pd.concat([user_choices, remaining_points.to_frame().T], ignore_index=True, ).to_dict("records")
+    table_data = pd.concat(
+        [user_choices, remaining_points.to_frame().T],
+        ignore_index=True,
+    ).to_dict("records")
 
     return dash_table.DataTable(
         id="all-users",
@@ -51,12 +54,10 @@ def create_all_users(user_choices: pd.DataFrame, fixtures: pd.DataFrame) -> dash
         style_table={"overflowX": "auto", "width": "100%"},
         style_data_conditional=[
             {
-                'if': {
-                    'row_index': len(table_data) - 1
-                },
-                'fontWeight': 'bold',
-                'borderBottom': '3px solid black',
-                'borderTop': '3px solid black'
+                "if": {"row_index": len(table_data) - 1},
+                "fontWeight": "bold",
+                "borderBottom": "3px solid black",
+                "borderTop": "3px solid black",
             }
-        ]
+        ],
     )
