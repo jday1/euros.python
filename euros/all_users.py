@@ -39,7 +39,7 @@ def create_all_users(user_choices: pd.DataFrame, fixtures: pd.DataFrame) -> dash
 
     remaining_points = user_choices[user_choices["team"].isin(remaining_teams)].sum()
 
-    remaining_points["team"] = "Points Left"
+    remaining_points["team"] = "Tokens Left"
 
     user_choices["team"] = user_choices["team"].apply(lambda x: x + " " + FLAG_UNICODE[x])
 
